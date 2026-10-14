@@ -1,6 +1,8 @@
 class Player{
     constructor(startId){
         this.id = startId
+        this.title = `Player ${this.id + 1}`
+
         this.hp = 50;
         this.attack = 15;
         this.dodge = 25;
@@ -61,6 +63,7 @@ class Player{
     returnStats(){
         return {
             id: this.id,
+            title: this.title,
             hp: this.hp,
             attack: this.attack,
             dodge: this.dodge,
@@ -88,6 +91,7 @@ let currentTurn = 0;
 let playerPlayed = null
 let gameRunning = true
 let clearNotificationTimeout = 0;
+let password = null
 
 
 async function handleActionClick(notificationText, dontChangeTurn){
@@ -100,7 +104,8 @@ async function handleActionClick(notificationText, dontChangeTurn){
             players[0].returnStats(),
             players[1].returnStats(),
         ],
-        notificationText
+        notificationText,
+        password
     }
 
     const data = await fetch(`${apiUri}/moveMade`, {
@@ -134,12 +139,12 @@ function updateVisuals(notificationText, winnerId){
         player.updateStatDisplay()
 
         if(player.hp <= 0){
-            someoneWon = `Player ${Number(players[0].hp < players[1].hp) + 1}`
+            someoneWon = `${Number(players[0].hp < players[1].hp) + 1}`
         }
     })
 
     if(someoneWon && notificationText != undefined){
-        notificationText = `${notificationText} \n ${someoneWon} won!`
+        notificationText = `${notificationText} \n ${players[someoneWon].title} won!`
         localStorage.clear()
         gameRunning = false
     }
@@ -183,6 +188,7 @@ async function setGameStateAfterFetch(){
             players[1].returnStats(),
         ],
         notificationText: dataJson.state.notificationText,
+        password,
         currentTurn
     }
 
@@ -205,7 +211,9 @@ function displayNotification(text, permanent){
 }
 
 async function startGame(){
-    playerPlayed = JSON.parse(localStorage.getItem("connGameInfo")).playerId
+    let connGameInfo = JSON.parse(localStorage.getItem("connGameInfo"))
+    playerPlayed = connGameInfo.playerId
+    password = connGameInfo.password
 
     if(localStorage.getItem("gameState") != undefined){
         let state = JSON.parse(localStorage.getItem("gameState"))
@@ -224,7 +232,7 @@ async function startGame(){
         playerControls.id = `playerControls${i}`
 
         const h1Title = document.createElement("h1")
-        h1Title.innerText = `Player ${i + 1}`
+        h1Title.innerText = player.title
 
         const attackBtn = document.createElement("button")
         attackBtn.innerText = "Attack"
@@ -234,9 +242,9 @@ async function startGame(){
                 let notificationMsg = ""
 
                 if(dealtDmg == 0){
-                    notificationMsg = `Enemy dodged your attack!`
+                    notificationMsg = `${opponent.title} dodged ${player.title}'s attack!`
                 }else{
-                    notificationMsg = `You've dealt ${dealtDmg} dmg!`
+                    notificationMsg = `${opponent.title} got hit for ${dealtDmg} hp!`
                 }
 
                 handleActionClick(notificationMsg)
@@ -251,9 +259,9 @@ async function startGame(){
                 let notificationMsg = ""
 
                 if(healedHp == 0){
-                    notificationMsg = `Heal wasn't successful!`
+                    notificationMsg = `${player.title}'s heal wasn't successful!`
                 }else{
-                    notificationMsg = `You healed ${healedHp} hp!`
+                    notificationMsg = `${player.title} healed ${healedHp} hp!`
                 }
 
                 handleActionClick(notificationMsg)
@@ -266,9 +274,9 @@ async function startGame(){
             if(currentTurn == player.id){
                 if(opponent.attack >= 1){
                     player.makeAction("lower", opponent, "attack")
-                    handleActionClick(`You lowered enemy attack!`)
+                    handleActionClick(`You lowered ${opponent.title} attack!`)
                 }else{
-                    displayNotification(`You cant lower enemy attack any further!`)
+                    displayNotification(`You cant lower ${opponent.title} attack any further!`)
                 }
             }
         })
@@ -279,9 +287,9 @@ async function startGame(){
             if(currentTurn == player.id){
                 if(opponent.dodge >= 1){
                     player.makeAction("lower", opponent, "dodge")
-                    handleActionClick(`You lowered enemy dodge!`)
+                    handleActionClick(`You lowered ${opponent.title} dodge!`)
                 }else{
-                    displayNotification(`You cant lower enemy dodge any further!`)
+                    displayNotification(`You cant lower ${opponent.title} dodge any further!`)
                 }
             }
         })
