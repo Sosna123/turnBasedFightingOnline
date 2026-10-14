@@ -10,6 +10,8 @@ app.use(cors())
 app.use(express.json())
 app.use(morgan("dev"))
 
+app.set('etag', false)
+
 const port = 3000
 const maxTimeWaiting = 15 * 1000
 

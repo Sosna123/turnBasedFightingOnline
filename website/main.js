@@ -95,18 +95,20 @@ async function handleActionClick(notificationText, dontChangeTurn){
         currentTurn = (currentTurn + 1) % 2
     }
 
+    const gameState = {
+        playerData: [
+            players[0].returnStats(),
+            players[1].returnStats(),
+        ],
+        notificationText
+    }
+
     const data = await fetch(`${apiUri}/moveMade`, {
         method: "post",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            playerData: [
-                players[0].returnStats(),
-                players[1].returnStats(),
-            ],
-            notificationText
-        })
+        body: JSON.stringify(gameState)
     })
 
     if(data.status == 200){
@@ -114,6 +116,8 @@ async function handleActionClick(notificationText, dontChangeTurn){
     }
 
     updateVisuals(notificationText)
+    gameState.currentTurn = currentTurn
+    localStorage.setItem("gameState", JSON.stringify(gameState))
 }
 
 function updateVisuals(notificationText, winnerId){
@@ -136,6 +140,7 @@ function updateVisuals(notificationText, winnerId){
 
     if(someoneWon && notificationText != undefined){
         notificationText = `${notificationText} \n ${someoneWon} won!`
+        localStorage.clear()
         gameRunning = false
     }
 
@@ -171,6 +176,17 @@ async function setGameStateAfterFetch(){
     players[0].updateData(dataJson.state.playerData[0])
     players[1].updateData(dataJson.state.playerData[1])
     updateVisuals(dataJson.state.notificationText, dataJson.state.winner)
+
+    const gameState = {
+        playerData: [
+            players[0].returnStats(),
+            players[1].returnStats(),
+        ],
+        notificationText: dataJson.state.notificationText,
+        currentTurn
+    }
+
+    localStorage.setItem("gameState", JSON.stringify(gameState))
 }
 
 function displayNotification(text, permanent){
@@ -190,6 +206,14 @@ function displayNotification(text, permanent){
 
 async function startGame(){
     playerPlayed = JSON.parse(localStorage.getItem("connGameInfo")).playerId
+
+    if(localStorage.getItem("gameState") != undefined){
+        let state = JSON.parse(localStorage.getItem("gameState"))
+
+        players[0].updateData(state.playerData[0])
+        players[1].updateData(state.playerData[1])
+        currentTurn = state.currentTurn
+    }
 
     for(let i = 0; i < players.length; i++){
         const player = players[i];
@@ -286,7 +310,10 @@ async function startGame(){
     })
 
     updateVisuals()
-    if(playerPlayed == 1){
+    if(playerPlayed == 1 && localStorage.getItem("gameState") == undefined){
+        setGameStateAfterFetch()
+    }
+    if(currentTurn != playerPlayed && localStorage.getItem("gameState") != undefined){
         setGameStateAfterFetch()
     }
 }
