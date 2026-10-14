@@ -140,9 +140,7 @@ async function setGameStateAfterFetch(){
     })
     const dataJson = await data.json()
 
-    console.log(data.status)
     if(data.status != 200){
-        console.log("need to fetch again")
         setGameStateAfterFetch()
         return
     }
@@ -178,14 +176,8 @@ function displayNotification(text){
 }
 
 async function startGame(){
-    const data = await fetch(`${apiUri}/connect`, {
-        method: "get",
-    })
-
-    const dataJson = await data.json()
-
-    playerPlayed = dataJson.playerId
-
+    // {playerId: dataJson.playerId}
+    playerPlayed = JSON.parse(localStorage.getItem("connGameInfo")).playerId
 
     for(let i = 0; i < players.length; i++){
         const player = players[i];
