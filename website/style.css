@@ -27,6 +27,10 @@ body{
     margin: 10px 15px 0 15px;
 }
 
+.playerControls > button[disabled]{
+    background-color: gray;
+}
+
 .currentPlayer{
     background-color: green;
 }

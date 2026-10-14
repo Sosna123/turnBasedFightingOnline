@@ -57,27 +57,97 @@ class Player{
 
         statDisplay.innerText = `Health: ${this.hp} \n Attack: ${this.attack} \n Dodge: ${this.dodge}%`
     }
+
+    returnStats(){
+        return {
+            id: this.id,
+            hp: this.hp,
+            attack: this.attack,
+            dodge: this.dodge,
+        }
+    }
+
+    updateData(playerObj){
+        if(playerObj.id == this.id){
+            this.hp = playerObj.hp
+            this.attack = playerObj.attack
+            this.dodge = playerObj.dodge
+        }
+    }
 }
 
 const playerDivs = document.querySelector("#playerDivs")
 const notificationDiv = document.querySelector("#notificationDiv")
-let clearNotificationTimeout = 0;
+
+const apiUri = "http://localhost:3000"
 
 let players = [new Player(0), new Player(1)];
-let currentTurn = Math.round(Math.random());
+// let currentTurn = Math.round(Math.random());
+let currentTurn = 0;
+let playerPlayed = null
 let gameRunning = true
+let clearNotificationTimeout = 0;
 
 
-function handleActionClick(playerClicked){
-    if(playerClicked == currentTurn){
-        document.querySelector(`#playerControls${currentTurn}`).classList.remove("currentPlayer")
+async function handleActionClick(notificationText, dontChangeTurn){
+    if(dontChangeTurn != true){
         currentTurn = (currentTurn + 1) % 2
-        document.querySelector(`#playerControls${currentTurn}`).classList.add("currentPlayer")
-
-        players.forEach((player) => {
-            player.updateStatDisplay()
-        })
     }
+
+    const data = await fetch(`${apiUri}/moveMade`, {
+        method: "post",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            playerData: [
+                players[0].returnStats(),
+                players[1].returnStats(),
+            ],
+            notificationText
+        })
+    })
+
+    if(data.status == 200){
+        setGameStateAfterFetch()
+    }
+
+    updateVisuals(notificationText)
+}
+
+function updateVisuals(notificationText){
+    if(document.querySelector(`.playerControls.currentPlayer`) != undefined){
+        document.querySelector(`.playerControls.currentPlayer`).classList.remove("currentPlayer")
+    }
+    document.querySelector(`#playerControls${currentTurn}`).classList.add("currentPlayer")
+
+    players.forEach((player) => {
+        player.updateStatDisplay()
+    })
+
+    if(notificationText != undefined){
+        displayNotification(notificationText)
+    }
+}
+
+async function setGameStateAfterFetch(){
+    const data = await fetch(`${apiUri}/waitUntilMoveMade`, {
+        method: "get",
+        headers:{
+            "Keep-Alive": "timeout=31, max=100"
+        }
+    })
+    const dataJson = await data.json()
+
+    if(await data.status != 200){
+        setGameStateAfterFetch()
+        return
+    }
+
+    currentTurn = (currentTurn + 1) % 2
+    players[0].updateData(dataJson.state.playerData[0])
+    players[1].updateData(dataJson.state.playerData[1])
+    updateVisuals(dataJson.state.notificationText)
 }
 
 function checkWinCondition(){
@@ -104,7 +174,16 @@ function displayNotification(text){
     }, 5000)
 }
 
-function startGame(){
+async function startGame(){
+    const data = await fetch(`${apiUri}/connect`, {
+        method: "get",
+    })
+
+    const dataJson = await data.json()
+
+    playerPlayed = dataJson.playerId
+
+
     for(let i = 0; i < players.length; i++){
         const player = players[i];
         const opponent = i == 0 ? players[1] : players[0]
@@ -121,12 +200,15 @@ function startGame(){
         attackBtn.addEventListener("click", () => {
             if(currentTurn == player.id){
                 let dealtDmg = player.makeAction("attack", opponent)
-                handleActionClick(i)
+                let notificationMsg = ""
+
                 if(dealtDmg == 0){
-                    displayNotification(`Enemy dodged your attack!`)
+                    notificationMsg = `Enemy dodged your attack!`
                 }else{
-                    displayNotification(`You've dealt ${dealtDmg} dmg!`)
+                    notificationMsg = `You've dealt ${dealtDmg} dmg!`
                 }
+
+                handleActionClick(notificationMsg)
             }
         })
 
@@ -135,12 +217,15 @@ function startGame(){
         healBtn.addEventListener("click", () => {
             if(currentTurn == player.id){
                 let healedHp = player.makeAction("heal")
+                let notificationMsg = ""
+
                 if(healedHp == 0){
-                    displayNotification(`Heal wasn't successful!`)
+                    notificationMsg = `Heal wasn't successful!`
                 }else{
-                    displayNotification(`You healed ${healedHp} hp!`)
+                    notificationMsg = `You healed ${healedHp} hp!`
                 }
-                handleActionClick(i)
+
+                handleActionClick(notificationMsg)
             }
         })
 
@@ -150,26 +235,22 @@ function startGame(){
             if(currentTurn == player.id){
                 if(opponent.attack >= 1){
                     player.makeAction("lower", opponent, "attack")
-                    displayNotification(`You lowered enemy attack!`)
-                    handleActionClick(i)
+                    handleActionClick(`You lowered enemy attack!`)
                 }else{
                     displayNotification(`You cant lower enemy attack any further!`)
-                    // warn player that they cant anymore
                 }
             }
         })
         
-        const lowerdodge = document.createElement("button")
-        lowerdodge.innerText = "Lower Enemies Dodge"
-        lowerdodge.addEventListener("click", () => {
+        const lowerDodge = document.createElement("button")
+        lowerDodge.innerText = "Lower Enemies Dodge"
+        lowerDodge.addEventListener("click", () => {
             if(currentTurn == player.id){
                 if(opponent.dodge >= 1){
                     player.makeAction("lower", opponent, "dodge")
-                    displayNotification(`You lowered enemy dodge!`)
-                    handleActionClick(i)
+                    handleActionClick(`You lowered enemy dodge!`)
                 }else{
                     displayNotification(`You cant lower enemy dodge any further!`)
-                    // warn player that they cant anymore
                 }
             }
         })
@@ -177,12 +258,18 @@ function startGame(){
         const statDisplay = document.createElement("div")
         statDisplay.classList.add("statDisplay")
         
+        if(playerPlayed != i){
+            attackBtn.setAttribute("disabled", "true")  
+            healBtn.setAttribute("disabled", "true")    
+            lowerAttack.setAttribute("disabled", "true")
+            lowerDodge.setAttribute("disabled", "true") 
+        }
         playerControls.appendChild(h1Title)
         playerControls.appendChild(statDisplay)
         playerControls.appendChild(attackBtn)
         playerControls.appendChild(healBtn)
         playerControls.appendChild(lowerAttack)
-        playerControls.appendChild(lowerdodge)
+        playerControls.appendChild(lowerDodge)
 
         playerDivs.appendChild(playerControls)
     }
@@ -191,8 +278,10 @@ function startGame(){
         player.updateStatDisplay()
     })
 
-    handleActionClick(currentTurn)
-    checkWinCondition()
+    updateVisuals()
+    if(playerPlayed == 1){
+        setGameStateAfterFetch()
+    }
 }
 
 startGame()
