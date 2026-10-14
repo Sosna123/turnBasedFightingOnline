@@ -10,25 +10,80 @@ body{
 #playerDivs{
     position: absolute;
     bottom: 0;
+    height: 50%;
     width: 100%;
     display: flex;
 }
 
 .playerControls{
     width: 50%;
-    padding: 20px;
     background-color: gray;
 }
 
-.playerControls > button{
+.playerControls > .playerBtns{
+    height: 50%;
+    box-sizing: border-box;
+}
+
+.playerControls > .playerTexts{
+    height: 50%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.playerControls > .playerBtns > button{
     padding: 15px;
     border: 1px solid black;
-    border-radius: 5px;
-    margin: 10px 15px 0 15px;
+    margin: 0;
+    width: 50%;
+    height: 50%;
+    font-size: 24px;
 }
 
-.playerControls > button[disabled]{
-    background-color: gray;
+.playerControls > .playerBtns > button#attackBtn{
+    background-color: red;
+}
+.playerControls > .playerBtns > button#healBtn{
+    background-color: green;
+}
+.playerControls > .playerBtns > button#lowerAttackBtn{
+    background-color: yellow;
+}
+.playerControls > .playerBtns > button#lowerDodgeBtn{
+    background-color: blue;
+}
+
+.playerControls > .playerTexts{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.playerControls > .statAndTitleDiv{
+    width: 75%;
+}
+
+.playerControls > .playerTexts h1{
+    font-size: 32px;
+}
+
+.playerControls > .playerTexts > *{
+    margin-top: 0;
+    font-size: 24px;
+}
+
+.playerControls > .playerTexts > .yourTurnDiv{
+    height: 100%;
+    aspect-ratio: 1;
+    background-color: #00657F;
+    border-radius: 100%;
+    text-align: center;
+    font-family: 32px;
+    color: white;
+    display: none;
+    /* display: flex in js */
+    justify-content: center;
+    align-items: center;
 }
 
 .currentPlayer{
@@ -40,12 +95,13 @@ body{
     position: absolute;
     text-align: center;
     top: 20px;
-    height: 32px;
     font-size: 24px;
     margin: 0;
     left: 50%;
     transform: translateX(-50%);
     padding: 30px;
-    background-color: burlywood;
+    border: 2px solid cornflowerblue;
+    border-radius: 15px;
+    color: cornflowerblue;
     display: none;
 }

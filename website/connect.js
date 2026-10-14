@@ -3,9 +3,15 @@ const errors = document.querySelector("#errors")
 const apiUri = "http://192.168.0.162:3000"
 
 connectBtn.addEventListener("click", async () => {
-    const data = await fetch(`${apiUri}/connect`, {
-        method: "get",
-    })
+    let data = null
+    try{
+        data = await fetch(`${apiUri}/connect`, {
+            method: "get",
+        })
+    }catch(e){
+        errors.innerText = `Error while connecting: can't connect to server`
+        return
+    }
 
     const dataJson = await data.json()
 

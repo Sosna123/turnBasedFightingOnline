@@ -55,9 +55,9 @@ class Player{
     }
 
     updateStatDisplay(){
-        let statDisplay = document.querySelector(`#playerControls${this.id} > .statDisplay`)
+        let statDisplay = document.querySelector(`#playerControls${this.id} .statDisplay`)
 
-        statDisplay.innerText = `Health: ${this.hp} \n Attack: ${this.attack} \n Dodge: ${this.dodge}%`
+        statDisplay.innerText = `Health: ${this.hp} \n Attack: ${this.attack} \n Dodge chance: ${this.dodge}% \n Heal chance: 50%`
     }
 
     returnStats(){
@@ -126,11 +126,11 @@ async function handleActionClick(notificationText, dontChangeTurn){
 }
 
 function updateVisuals(notificationText, winnerId){
-    if(document.querySelector(`.playerControls.currentPlayer`) != undefined){
-        document.querySelector(`.playerControls.currentPlayer`).classList.remove("currentPlayer")
+    if( document.querySelector(`#playerControls${(currentTurn + 1) % 2} .yourTurnDiv`) != undefined){
+        document.querySelector(`#playerControls${(currentTurn + 1) % 2} .yourTurnDiv`).style.display = "none"
     }
-    if( document.querySelector(`#playerControls${currentTurn}`) != undefined){
-        document.querySelector(`#playerControls${currentTurn}`).classList.add("currentPlayer")
+    if( document.querySelector(`#playerControls${currentTurn} .yourTurnDiv`) != undefined){
+        document.querySelector(`#playerControls${currentTurn} .yourTurnDiv`).style.display = "flex"
     }
 
     let someoneWon = winnerId != undefined
@@ -139,11 +139,12 @@ function updateVisuals(notificationText, winnerId){
         player.updateStatDisplay()
 
         if(player.hp <= 0){
-            someoneWon = `${Number(players[0].hp < players[1].hp) + 1}`
+            someoneWon = `${Number(players[0].hp < players[1].hp)}`
         }
     })
 
     if(someoneWon && notificationText != undefined){
+        console.log(someoneWon)
         notificationText = `${notificationText} \n ${players[someoneWon].title} won!`
         localStorage.clear()
         gameRunning = false
@@ -211,6 +212,10 @@ function displayNotification(text, permanent){
 }
 
 async function startGame(){
+    if(localStorage.getItem("connGameInfo") == undefined){
+        location.href = "index.html"
+    }
+
     let connGameInfo = JSON.parse(localStorage.getItem("connGameInfo"))
     playerPlayed = connGameInfo.playerId
     password = connGameInfo.password
@@ -231,11 +236,28 @@ async function startGame(){
         playerControls.classList.add("playerControls")
         playerControls.id = `playerControls${i}`
 
+        const textDiv = document.createElement("div")
+        textDiv.classList.add("playerTexts")
+
+        const statAndTitleDiv = document.createElement("div")
+        statAndTitleDiv.classList.add("statAndTitleDiv")
+
+        const statDisplay = document.createElement("div")
+        statDisplay.classList.add("statDisplay")
+
         const h1Title = document.createElement("h1")
         h1Title.innerText = player.title
 
+        const yourTurnDiv = document.createElement("div")
+        yourTurnDiv.classList.add("yourTurnDiv")
+        yourTurnDiv.innerText = "YOUR TURN"
+
+        const buttonsDiv = document.createElement("div")
+        buttonsDiv.classList.add("playerBtns")
+
         const attackBtn = document.createElement("button")
         attackBtn.innerText = "Attack"
+        attackBtn.id = "attackBtn"
         attackBtn.addEventListener("click", () => {
             if(currentTurn == player.id){
                 let dealtDmg = player.makeAction("attack", opponent)
@@ -253,6 +275,7 @@ async function startGame(){
 
         const healBtn = document.createElement("button")
         healBtn.innerText = "Heal"
+        healBtn.id = "healBtn"
         healBtn.addEventListener("click", () => {
             if(currentTurn == player.id){
                 let healedHp = player.makeAction("heal")
@@ -270,6 +293,7 @@ async function startGame(){
 
         const lowerAttack = document.createElement("button")
         lowerAttack.innerText = "Lower Enemy Attack"
+        lowerAttack.id = "lowerAttackBtn"
         lowerAttack.addEventListener("click", () => {
             if(currentTurn == player.id){
                 if(opponent.attack >= 1){
@@ -283,6 +307,7 @@ async function startGame(){
         
         const lowerDodge = document.createElement("button")
         lowerDodge.innerText = "Lower Enemies Dodge"
+        lowerDodge.id = "lowerDodgeBtn"
         lowerDodge.addEventListener("click", () => {
             if(currentTurn == player.id){
                 if(opponent.dodge >= 1){
@@ -294,21 +319,26 @@ async function startGame(){
             }
         })
         
-        const statDisplay = document.createElement("div")
-        statDisplay.classList.add("statDisplay")
-        
         if(playerPlayed != i){
             attackBtn.setAttribute("disabled", "true")  
             healBtn.setAttribute("disabled", "true")    
             lowerAttack.setAttribute("disabled", "true")
             lowerDodge.setAttribute("disabled", "true") 
         }
-        playerControls.appendChild(h1Title)
-        playerControls.appendChild(statDisplay)
-        playerControls.appendChild(attackBtn)
-        playerControls.appendChild(healBtn)
-        playerControls.appendChild(lowerAttack)
-        playerControls.appendChild(lowerDodge)
+
+        statAndTitleDiv.appendChild(h1Title)
+        statAndTitleDiv.appendChild(statDisplay)
+
+        textDiv.appendChild(statAndTitleDiv)
+        textDiv.appendChild(yourTurnDiv)
+
+        buttonsDiv.appendChild(attackBtn)
+        buttonsDiv.appendChild(healBtn)
+        buttonsDiv.appendChild(lowerAttack)
+        buttonsDiv.appendChild(lowerDodge)
+
+        playerControls.appendChild(textDiv)
+        playerControls.appendChild(buttonsDiv)
 
         playerDivs.appendChild(playerControls)
     }
