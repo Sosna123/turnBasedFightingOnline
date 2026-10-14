@@ -79,7 +79,8 @@ class Player{
 const playerDivs = document.querySelector("#playerDivs")
 const notificationDiv = document.querySelector("#notificationDiv")
 
-const apiUri = "http://localhost:3000"
+// const apiUri = "http://localhost:3000"
+const apiUri = "http://192.168.0.162:3000"
 
 let players = [new Player(0), new Player(1)];
 // let currentTurn = Math.round(Math.random());
@@ -134,12 +135,14 @@ async function setGameStateAfterFetch(){
     const data = await fetch(`${apiUri}/waitUntilMoveMade`, {
         method: "get",
         headers:{
-            "Keep-Alive": "timeout=31, max=100"
+            "Keep-Alive": "timeout=20, max=100"
         }
     })
     const dataJson = await data.json()
 
-    if(await data.status != 200){
+    console.log(data.status)
+    if(data.status != 200){
+        console.log("need to fetch again")
         setGameStateAfterFetch()
         return
     }

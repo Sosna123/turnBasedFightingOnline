@@ -1,17 +1,24 @@
 const express = require("express")
 const cors = require("cors")
 const EventEmiter = require("events")
+const morgan = require("morgan")
 
 const events = new EventEmiter()
 
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use(morgan("dev"))
 
 const port = 3000
-const maxTimeWaiting = 30 * 1000
+const maxTimeWaiting = 15 * 1000
 
 let gamesRunning = []
+
+// favicon.ico fix
+app.get("/favicon.ico", (req, res) => {
+    res.send("")
+})
 
 // connect to game
 app.get("/connect", (req, res) => {
@@ -68,7 +75,7 @@ app.get("/waitUntilMoveMade", (req, res) => {
     setTimeout(() => {
         if(!responseSent){
             events.removeListener("moveMade", sendGameState)
-            res.statusCode = 204
+            res.statusCode = 504
             res.json({text: `No move was made in ${maxTimeWaiting}ms`})
         }
     }, maxTimeWaiting)  
