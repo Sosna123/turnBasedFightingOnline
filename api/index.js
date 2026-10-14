@@ -66,6 +66,14 @@ app.get("/waitUntilMoveMade", (req, res) => {
     let responseSent = false
 
     let sendGameState = (state) => {
+        let arePlayersAlive = true
+        state.playerData.forEach((player) => {
+            if(player.hp <= 0){
+                arePlayersAlive = false
+                state.winner = `Player ${Number(state.playerData[0].hp < state.playerData[1].hp) + 1}`
+            }
+        })
+
         res.json({text: "A move was made", state})
         responseSent = true
     }

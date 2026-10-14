@@ -116,22 +116,39 @@ async function handleActionClick(notificationText, dontChangeTurn){
     updateVisuals(notificationText)
 }
 
-function updateVisuals(notificationText){
+function updateVisuals(notificationText, winnerId){
     if(document.querySelector(`.playerControls.currentPlayer`) != undefined){
         document.querySelector(`.playerControls.currentPlayer`).classList.remove("currentPlayer")
     }
-    document.querySelector(`#playerControls${currentTurn}`).classList.add("currentPlayer")
+    if( document.querySelector(`#playerControls${currentTurn}`) != undefined){
+        document.querySelector(`#playerControls${currentTurn}`).classList.add("currentPlayer")
+    }
+
+    let someoneWon = winnerId != undefined
 
     players.forEach((player) => {
         player.updateStatDisplay()
+
+        if(player.hp <= 0){
+            someoneWon = `Player ${Number(players[0].hp < players[1].hp) + 1}`
+        }
     })
 
+    if(someoneWon && notificationText != undefined){
+        notificationText = `${notificationText} \n ${someoneWon} won!`
+        gameRunning = false
+    }
+
     if(notificationText != undefined){
-        displayNotification(notificationText)
+        displayNotification(notificationText, someoneWon)
     }
 }
 
 async function setGameStateAfterFetch(){
+    if(!gameRunning){
+        return
+    }
+
     const data = await fetch(`${apiUri}/waitUntilMoveMade`, {
         method: "get",
         headers:{
@@ -145,38 +162,33 @@ async function setGameStateAfterFetch(){
         return
     }
 
+    if(dataJson.state.winner != undefined){
+        currentTurn = -1
+        gameRunning = false
+    }
+
     currentTurn = (currentTurn + 1) % 2
     players[0].updateData(dataJson.state.playerData[0])
     players[1].updateData(dataJson.state.playerData[1])
-    updateVisuals(dataJson.state.notificationText)
+    updateVisuals(dataJson.state.notificationText, dataJson.state.winner)
 }
 
-function checkWinCondition(){
-    players.forEach((player) => {
-        if(player.hp <= 0){
-            gameRunning = false
-            displayNotification(`Player ${currentTurn + 1} has won!`, false)
-            currentTurn = -1
-            return
-        }
-    })
-}
-
-function displayNotification(text){
+function displayNotification(text, permanent){
     notificationDiv.innerText = text;
     notificationDiv.style.display = "block"
     
     clearTimeout(clearNotificationTimeout)
     
-    clearNotificationTimeout = setTimeout(() => {
-        notificationDiv.innerText = "";
-        notificationDiv.style.display = "none"
-        clearNotificationTimeout = 0;
-    }, 5000)
+    if(!permanent){
+        clearNotificationTimeout = setTimeout(() => {
+            notificationDiv.innerText = "";
+            notificationDiv.style.display = "none"
+            clearNotificationTimeout = 0;
+        }, 5000)
+    }
 }
 
 async function startGame(){
-    // {playerId: dataJson.playerId}
     playerPlayed = JSON.parse(localStorage.getItem("connGameInfo")).playerId
 
     for(let i = 0; i < players.length; i++){
