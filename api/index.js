@@ -16,11 +16,14 @@ app.set('etag', false)
 const port = 3000
 const maxTimeWaiting = 15 * 1000
 
+let emptyCustomIds = {}
+
 let gamesRunning = [
     {
         player0Taken: false,
         player1Taken: false,
-        password: null,
+        password: crypto.randomBytes(16).toString('hex'),
+        gameId: 0,
         state: null
     }
 ]
@@ -35,45 +38,85 @@ app.get("/connect", (req, res) => {
     let currPlayer = null;
     let password = null
     let state = null
+    let gameId = null
 
-    if(gamesRunning[gamesRunning.length - 1].player0Taken == false){
-        currPlayer = 0
-        password = crypto.randomBytes(16).toString('hex')
-        let gameObj = {
-            player0Taken: true,
-            player1Taken: false,
-            password,
-            state: null
+    if(!gamesRunning[gamesRunning.length - 1].player0Taken || !gamesRunning[gamesRunning.length - 1].player1Taken){
+        gameId = gamesRunning.length - 1
+        if(gamesRunning[gameId].player0Taken == false){
+            currPlayer = 0
+            gamesRunning[gameId].player0Taken = true
+        }else{
+            currPlayer = 1
+            gamesRunning[gameId].player1Taken = true
         }
         
-        gamesRunning[gamesRunning.length - 1] = gameObj
-    }else if(gamesRunning[gamesRunning.length - 1].player0Taken && !gamesRunning[gamesRunning.length - 1].player1Taken){
-        currPlayer = 1
-        
-        gamesRunning[gamesRunning.length - 1].player1Taken = true
-        password = gamesRunning[gamesRunning.length - 1].password
-        state = gamesRunning[gamesRunning.length - 1].state
+        password = gamesRunning[gameId].password
+        state = gamesRunning[gameId].state
     }else if(gamesRunning[gamesRunning.length - 1].player0Taken && gamesRunning[gamesRunning.length - 1].player1Taken){
-        // res.statusCode = 400;
-        // res.json({"text": "game is already full"})
-        // return
-
         currPlayer = 0
+        gameId = gamesRunning.length
+
         password = crypto.randomBytes(16).toString('hex')
         let gameObj = {
             player0Taken: true,
             player1Taken: false,
             password,
+            gmaeId: gamesRunning.length,
             state: null
         }
         
         gamesRunning.push(gameObj)
     }
 
-    console.log(gamesRunning)
-
     console.log(`Player ${currPlayer + 1} connected`)
-    res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password, state})
+    res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password, state, gameId})
+})
+
+app.post("/connect", (req, res) => {
+    if(req.body.id == undefined){
+        res.statusCode = 400;
+        res.json({"text": "didn't sent id of game"})
+        return
+    }
+
+    let customId = req.body.id
+    let currPlayer = null;
+    let password = null
+    let state = null
+    let gameId = null
+
+    if(!Object.keys(emptyCustomIds).includes(customId) || emptyCustomIds[customId] == undefined){
+        gameId = gamesRunning.length
+        currPlayer = 0
+        password = crypto.randomBytes(16).toString('hex')
+        let gameObj = {
+            player0Taken: true,
+            player1Taken: false,
+            password,
+            gameId,
+            state: null
+        }
+        
+        let newId = gamesRunning.push(gameObj)
+        newId--
+        emptyCustomIds[customId] = newId
+    }else if(Object.keys(emptyCustomIds).includes(customId) && !gamesRunning[gamesRunning.length - 1].player1Taken){
+        currPlayer = 1
+        
+        gameId = emptyCustomIds[customId]
+        gamesRunning[gameId].player1Taken = true
+        password = gamesRunning[gameId].password
+        state = gamesRunning[gameId].state
+
+        emptyCustomIds[customId] = undefined
+    }else if(Object.keys(obj).includes(customId) && gamesRunning[gamesRunning.length - 1].player0Taken && gamesRunning[gamesRunning.length - 1].player1Taken){
+        res.statusCode = 400;
+        res.json({"text": "game is already full"})
+        return
+    }
+
+    console.log(`Player ${currPlayer + 1} connected to game ${customId}`)
+    res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password, state, gameId})
 })
 
 app.post("/moveMade", (req, res) => {
@@ -84,7 +127,7 @@ app.post("/moveMade", (req, res) => {
         gamesRunning[0].state = body
         res.json({text: "game state updated"})
     }else{
-        res.statusCode = 400
+        res.statusCode = 504
         res.json({text: "body of the request is undefined"})
     }
 })
@@ -93,17 +136,17 @@ app.get("/waitUntilMoveMade", (req, res) => {
     let responseSent = false
 
     let sendGameState = (state) => {
-        gamesRunning[0].state = state
-
-        let arePlayersAlive = true
-        state.playerData.forEach((player) => {
-            if(player.hp <= 0){
-                arePlayersAlive = false
-                state.winner = `${Number(state.playerData[0].hp < state.playerData[1].hp)}`
-            }
-        })
-
         if(state.password == gamesRunning[0].password){
+            gamesRunning[state.gameId].state = state
+
+            let arePlayersAlive = true
+            state.playerData.forEach((player) => {
+                if(player.hp <= 0){
+                    arePlayersAlive = false
+                    state.winner = `${Number(state.playerData[0].hp < state.playerData[1].hp)}`
+                }
+            })
+
             res.json({text: "A move was made", state})
             responseSent = true
         }
