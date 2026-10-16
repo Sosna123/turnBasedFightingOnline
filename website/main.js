@@ -26,7 +26,7 @@ class Player{
     }
 
     attackPlayer(otherPlayer){
-        this.pushToAnimStack(animationFrames.attack, true)
+        this.pushToAnimStack("attack", true)
         
         let dmg = this.attack
         return otherPlayer.dealDmg(dmg)
@@ -34,7 +34,7 @@ class Player{
     
     heal(){
         if(Math.random() >= .5){
-            this.pushToAnimStack(animationFrames.heal, true)
+            this.pushToAnimStack("heal", true)
             const healedHp = Math.trunc(Math.random() * 5) + 15
             this.hp += healedHp
             return healedHp
@@ -44,10 +44,10 @@ class Player{
 
     lowerStat(otherPlayer, stat){
         if(stat == "attack"){
-            otherPlayer.pushToAnimStack(animationFrames.lowerAttack, true)
+            otherPlayer.pushToAnimStack("lowerAttack", true)
             otherPlayer[stat]--;
         }else if(stat == "dodge"){
-            otherPlayer.pushToAnimStack(animationFrames.lowerDodge, true)
+            otherPlayer.pushToAnimStack("lowerDodge", true)
             otherPlayer[stat] -= 5;
         }
     }
@@ -55,10 +55,10 @@ class Player{
     dealDmg(dmg){
         const randomDodgeChance = Math.trunc(Math.random() * 100) + 1
         if(randomDodgeChance < this.dodge){
-            this.pushToAnimStack(animationFrames.dodge, true)
+            this.pushToAnimStack("dodge", true)
             return 0
         }else{
-            this.pushToAnimStack(animationFrames.takeDmg, true)
+            this.pushToAnimStack("takeDmg", true)
             this.hp -= dmg
             return dmg
         }
@@ -77,6 +77,7 @@ class Player{
             hp: this.hp,
             attack: this.attack,
             dodge: this.dodge,
+            lastAnimation: this.lastAnimation
         }
     }
 
@@ -85,15 +86,21 @@ class Player{
             this.hp = playerObj.hp
             this.attack = playerObj.attack
             this.dodge = playerObj.dodge
+
+            if(playerObj.lastAnimation != "idle" || playerObj.lastAnimation != undefined){
+                this.pushToAnimStack(playerObj.lastAnimation, true)
+            }
         }
     }
 
     pushToAnimStack(newAnimFrames, startFresh){
+        this.lastAnimation = newAnimFrames
+
         if(startFresh == true){
             this.animFrameStack = []
         }
 
-        newAnimFrames.forEach((frame) => {
+        animationFrames[newAnimFrames].forEach((frame) => {
             this.animFrameStack.push(frame)
         })
     }
@@ -251,7 +258,7 @@ function animationManager(){
     setInterval(() => {
         players.forEach((player) => {
             if(player.animFrameStack.length <= 1){
-                player.pushToAnimStack([...animationFrames.idle])
+                player.pushToAnimStack("idle")
             }
 
             player.playAnimation()
