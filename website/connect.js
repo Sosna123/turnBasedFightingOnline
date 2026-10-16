@@ -16,9 +16,14 @@ connectBtn.addEventListener("click", async () => {
     const dataJson = await data.json()
 
     if(data.status == 200){
-        location.href = "game.html"
         localStorage.clear()
         localStorage.setItem("connGameInfo", JSON.stringify({playerId: dataJson.playerId, password: dataJson.password}))
+        
+        if(dataJson.state != null){
+            localStorage.setItem("gameState", JSON.stringify(dataJson.state))
+        }
+
+        location.href = "game.html"
     }else{
         errors.innerText = `Error while connecting: ${dataJson.text}`
     }

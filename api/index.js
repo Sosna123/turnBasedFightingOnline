@@ -27,6 +27,7 @@ app.get("/favicon.ico", (req, res) => {
 app.get("/connect", (req, res) => {
     let currPlayer = null;
     let password = null
+    let state = null
 
     if(gamesRunning[0] == undefined){
         currPlayer = 0
@@ -34,7 +35,8 @@ app.get("/connect", (req, res) => {
         let gameObj = {
             player0Taken: true,
             player1Taken: false,
-            password
+            password,
+            state: null
         }
         
         gamesRunning[0] = gameObj
@@ -43,6 +45,7 @@ app.get("/connect", (req, res) => {
         
         gamesRunning[0].player1Taken = true
         password = gamesRunning[0].password
+        state = gamesRunning[0].state
     }else if(gamesRunning[0].player0Taken && gamesRunning[0].player1Taken){
         res.statusCode = 400;
         res.json({"text": "game is already full"})
@@ -50,15 +53,16 @@ app.get("/connect", (req, res) => {
     }
 
     console.log(`Player ${currPlayer + 1} connected`)
-    res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password})
+    res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password, state})
 })
 
 app.post("/moveMade", (req, res) => {
     if(req.body != undefined){
         const body = req.body
 
-        res.json({text: "game state updated"})
         events.emit("moveMade", body)
+        gamesRunning[0].state = body
+        res.json({text: "game state updated"})
     }else{
         res.statusCode = 400
         res.json({text: "body of the request is undefined"})
@@ -69,6 +73,8 @@ app.get("/waitUntilMoveMade", (req, res) => {
     let responseSent = false
 
     let sendGameState = (state) => {
+        gamesRunning[0].state = state
+
         let arePlayersAlive = true
         state.playerData.forEach((player) => {
             if(player.hp <= 0){

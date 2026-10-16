@@ -142,7 +142,8 @@ async function handleActionClick(notificationText, dontChangeTurn){
             players[1].returnStats(),
         ],
         notificationText,
-        password
+        currentTurn,
+        password,
     }
 
     const data = await fetch(`${apiUri}/moveMade`, {
@@ -158,7 +159,6 @@ async function handleActionClick(notificationText, dontChangeTurn){
     }
 
     updateVisuals(notificationText)
-    gameState.currentTurn = currentTurn
     localStorage.setItem("gameState", JSON.stringify(gameState))
 }
 
