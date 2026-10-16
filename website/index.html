@@ -3,15 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Joining - turnBasedFightingOnline</title>
     <link rel="stylesheet" href="styleIndex.css">
     <script src="connect.js" defer></script>
 </head>
 <body>
-    <h1>turnBasedFightingOnline</h1>
-    <label for="customId">Enter a custom id (optional):</label>
-    <input type="text" name="customId" id="customId">
-    <button id="connectBtn">CONNECT TO GAME</button>
-    <p id="errors"></p>
+    <div id="container">
+        <div id="displayContainer">
+            <h1>turnBasedFightingOnline</h1>
+            <div>
+                <label for="customIdCheckbox">Do you want to join a private server?:</label>
+                <input type="checkbox" name="customIdCheckbox" id="customIdCheckbox">
+            </div>
+            <div id="customIdDiv">
+                <label for="customId">Enter a custom code:</label>
+                <input type="text" name="customId" id="customId">
+            </div>
+            <button id="connectBtn">CONNECT TO GAME</button>
+            <p id="errors"></p>
+        </div>
+    </div>
 </body>
 </html>

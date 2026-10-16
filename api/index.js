@@ -89,6 +89,11 @@ app.post("/connect", (req, res) => {
     }
 
     let customId = req.body.id
+
+    if(customId.length > 16){
+        customId = customId.substring(0, 16)
+    }
+
     let currPlayer = null;
     let password = null
     let state = null

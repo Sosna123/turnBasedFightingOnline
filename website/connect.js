@@ -1,19 +1,31 @@
 const connectBtn = document.querySelector("#connectBtn")
+const customIdCheckbox = document.querySelector("#customIdCheckbox")
+const customIdDiv = document.querySelector("#customIdDiv")
 const customId = document.querySelector("#customId")
 const errors = document.querySelector("#errors")
 const apiUri = "http://192.168.0.162:3000"
 
+customIdCheckbox.addEventListener("click", () => {
+    customIdDiv.style.display = customIdCheckbox.checked ? "block" : "none"
+})
+
+
 connectBtn.addEventListener("click", async () => {
     let data = null
+    let customIdParsed = customId.value
 
-    if(customId.value){
+    if(customIdParsed.length > 16){
+        customIdParsed = customIdParsed.substring(0, 16)
+    }
+
+    if(customIdParsed.value){
         try{
             data = await fetch(`${apiUri}/connect`, {
                 method: "post",
                 headers:{
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({id: customId.value})
+                body: JSON.stringify({id: customIdParsed.value})
             })
         }catch(e){
             errors.innerText = `Error while connecting: can't connect to server`
