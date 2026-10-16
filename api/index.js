@@ -61,14 +61,14 @@ app.get("/connect", (req, res) => {
             player0Taken: true,
             player1Taken: false,
             password,
-            gmaeId: gamesRunning.length,
+            gameId: gamesRunning.length,
             state: null
         }
         
         gamesRunning.push(gameObj)
     }
 
-    console.log(`Player ${currPlayer + 1} connected`)
+    console.log(`Player ${currPlayer + 1} connected to game ${gameId}`)
     res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password, state, gameId})
 })
 
@@ -115,7 +115,7 @@ app.post("/connect", (req, res) => {
         return
     }
 
-    console.log(`Player ${currPlayer + 1} connected to game ${customId}`)
+    console.log(`Player ${currPlayer + 1} connected to game ${gameId} (customId: ${customId})`)
     res.json({"text": `connected as player ${currPlayer + 1}`, playerId: currPlayer, password, state, gameId})
 })
 
@@ -124,7 +124,7 @@ app.post("/moveMade", (req, res) => {
         const body = req.body
 
         events.emit("moveMade", body)
-        gamesRunning[0].state = body
+        gamesRunning[body.gameId].state = body
         res.json({text: "game state updated"})
     }else{
         res.statusCode = 504
@@ -136,7 +136,7 @@ app.get("/waitUntilMoveMade", (req, res) => {
     let responseSent = false
 
     let sendGameState = (state) => {
-        if(state.password == gamesRunning[0].password){
+        if(state.password == gamesRunning[state.gameId].password){
             gamesRunning[state.gameId].state = state
 
             let arePlayersAlive = true

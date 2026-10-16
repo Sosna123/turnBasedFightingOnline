@@ -136,6 +136,7 @@ let playerPlayed = null
 let gameRunning = true
 let clearNotificationTimeout = 0;
 let password = null
+let gameId = null;
 
 
 async function handleActionClick(notificationText, dontChangeTurn){
@@ -151,6 +152,7 @@ async function handleActionClick(notificationText, dontChangeTurn){
         notificationText,
         currentTurn,
         password,
+        gameId
     }
 
     const data = await fetch(`${apiUri}/moveMade`, {
@@ -188,7 +190,7 @@ function updateVisuals(notificationText, winnerId){
     })
 
     if(someoneWon && notificationText != undefined){
-        notificationText = `${notificationText} \n ${players[someoneWon].title} won!`
+        notificationText = `${notificationText}\n ${players[someoneWon].title} won!\n Click here to return to main menu`
         localStorage.clear()
         gameRunning = false
     }
@@ -245,13 +247,18 @@ async function setGameStateAfterFetch(){
     localStorage.setItem("gameState", JSON.stringify(gameState))
 }
 
-function displayNotification(text, permanent){
+function displayNotification(text, gameEnded){
     notificationDiv.innerText = text;
     notificationDiv.style.display = "block"
     
     clearTimeout(clearNotificationTimeout)
     
-    if(!permanent){
+    if(gameEnded){
+        notificationDiv.style.textDecoration = "underline"
+        notificationDiv.addEventListener("click", () => {
+            location.href = "index.html"
+        })
+    }else{
         clearNotificationTimeout = setTimeout(() => {
             notificationDiv.innerText = "";
             notificationDiv.style.display = "none"
@@ -280,6 +287,7 @@ async function startGame(){
     let connGameInfo = JSON.parse(localStorage.getItem("connGameInfo"))
     playerPlayed = connGameInfo.playerId
     password = connGameInfo.password
+    gameId = connGameInfo.gameId
 
     if(localStorage.getItem("gameState") != undefined){
         let state = JSON.parse(localStorage.getItem("gameState"))
