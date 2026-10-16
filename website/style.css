@@ -26,10 +26,11 @@ body > *{
 }
 
 .playerImg{
-    height: 33.33%;
+    height: 40%;
     aspect-ratio: 1 / 1;
     margin: auto;
     image-rendering: pixelated;
+    user-select: none;
 }
 
 #player0Img{
@@ -41,13 +42,13 @@ body > *{
 }
 
 .playerControls > .playerBtns{
-    height: 33.33%;
+    height: 30%;
     box-sizing: border-box;
     background-color: black;
 }
 
 .playerControls > .playerTexts{
-    height: 33.33%;
+    height: 30%;
     padding: 20px;
     box-sizing: border-box;
     background-color: black;
@@ -108,15 +109,15 @@ body > *{
 .playerControls > .playerTexts > .yourTurnDiv{
     height: 100%;
     aspect-ratio: 1;
-    background-color: #0000a4;
-    border-radius: 100%;
     text-align: center;
     font-family: 32px;
-    color: white;
     display: none;
     /* display: flex in js */
     justify-content: center;
     align-items: center;
+    background-image: url("./assets/imgs/yourTurnCircle.png");
+    background-repeat: no-repeat;
+    background-size: contain;
 }
 
 .currentPlayer{

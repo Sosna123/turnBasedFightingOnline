@@ -203,12 +203,18 @@ async function setGameStateAfterFetch(){
         return
     }
 
-    const data = await fetch(`${apiUri}/waitUntilMoveMade`, {
-        method: "get",
-        headers:{
-            "Keep-Alive": "timeout=20, max=100"
-        }
-    })
+    let data = null
+    try{
+        data = await fetch(`${apiUri}/waitUntilMoveMade`, {
+            method: "get",
+            headers:{
+                "Keep-Alive": "timeout=20, max=100"
+            }
+        })
+    }catch(e){
+        setGameStateAfterFetch()
+        return
+    }
     const dataJson = await data.json()
 
     if(data.status != 200){
@@ -294,6 +300,7 @@ async function startGame(){
         const playerImg = document.createElement("img");
         playerImg.classList.add("playerImg")
         playerImg.id = `player${i}Img`
+        playerImg.setAttribute("draggable", "false")
         playerImg.src = `./assets/imgs/player${i}/idle0.png`
 
         const textDiv = document.createElement("div")
@@ -310,7 +317,6 @@ async function startGame(){
 
         const yourTurnDiv = document.createElement("div")
         yourTurnDiv.classList.add("yourTurnDiv")
-        yourTurnDiv.innerText = "YOUR TURN"
 
         let buttonsDiv = document.createElement("div")
         buttonsDiv.classList.add("playerBtns")
