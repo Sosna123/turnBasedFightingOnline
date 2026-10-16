@@ -40,32 +40,41 @@ app.get("/connect", (req, res) => {
     let state = null
     let gameId = null
 
-    if(!gamesRunning[gamesRunning.length - 1].player0Taken || !gamesRunning[gamesRunning.length - 1].player1Taken){
-        gameId = gamesRunning.length - 1
-        if(gamesRunning[gameId].player0Taken == false){
-            currPlayer = 0
-            gamesRunning[gameId].player0Taken = true
-        }else{
-            currPlayer = 1
-            gamesRunning[gameId].player1Taken = true
-        }
-        
-        password = gamesRunning[gameId].password
-        state = gamesRunning[gameId].state
-    }else if(gamesRunning[gamesRunning.length - 1].player0Taken && gamesRunning[gamesRunning.length - 1].player1Taken){
-        currPlayer = 0
-        gameId = gamesRunning.length
+    for(let i = gamesRunning.length - 1; i >= 0; i--){
+        if(gamesRunning[i].customId){
+            console.log(`skipping ${gamesRunning[i].customId}`)
+            continue
+        }   
 
-        password = crypto.randomBytes(16).toString('hex')
-        let gameObj = {
-            player0Taken: true,
-            player1Taken: false,
-            password,
-            gameId: gamesRunning.length,
-            state: null
+        if(!gamesRunning[i].player0Taken || !gamesRunning[i].player1Taken){
+            gameId = i
+            if(gamesRunning[gameId].player0Taken == false){
+                currPlayer = 0
+                gamesRunning[gameId].player0Taken = true
+            }else{
+                currPlayer = 1
+                gamesRunning[gameId].player1Taken = true
+            }
+            
+            password = gamesRunning[gameId].password
+            state = gamesRunning[gameId].state
+            break
+        }else if(gamesRunning[i].player0Taken && gamesRunning[i].player1Taken){
+            currPlayer = 0
+            gameId = gamesRunning.length
+    
+            password = crypto.randomBytes(16).toString('hex')
+            let gameObj = {
+                player0Taken: true,
+                player1Taken: false,
+                password,
+                gameId: gamesRunning.length,
+                state: null
+            }
+            
+            gamesRunning.push(gameObj)
+            break
         }
-        
-        gamesRunning.push(gameObj)
     }
 
     console.log(`Player ${currPlayer + 1} connected to game ${gameId}`)
@@ -94,7 +103,8 @@ app.post("/connect", (req, res) => {
             player1Taken: false,
             password,
             gameId,
-            state: null
+            state: null,
+            customId
         }
         
         let newId = gamesRunning.push(gameObj)
