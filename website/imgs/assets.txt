@@ -1,1 +1,3 @@
 https://chasersgaming.itch.io/brawler-asset-character
+
+Changed colors, scaled 1000% up, inverted (side to side) player1

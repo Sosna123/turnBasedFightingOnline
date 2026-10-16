@@ -16,25 +16,38 @@ body > *{
 #playerDivs{
     position: absolute;
     bottom: 0;
-    height: 75%;
+    height: 100%;
     width: 100%;
     display: flex;
 }
 
 .playerControls{
     width: 50%;
-    background-color: black;
+}
+
+.playerImg{
+    height: 33.33%;
+    margin: auto;
+}
+
+#player0Img{
+    margin: 0 25vw 0 15vw;
+}
+#player1Img{
+    margin: 0 15vw 0 25vw;
 }
 
 .playerControls > .playerBtns{
-    height: 50%;
+    height: 33.33%;
     box-sizing: border-box;
+    background-color: black;
 }
 
 .playerControls > .playerTexts{
-    height: 50%;
+    height: 33.33%;
     padding: 20px;
     box-sizing: border-box;
+    background-color: black;
 }
 
 .playerControls > .playerBtns > button{

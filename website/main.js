@@ -7,6 +7,8 @@ class Player{
         this.hp = 50;
         this.attack = 15;
         this.dodge = 25;
+
+        this.animFrameStack = []
     }
 
     makeAction(action, otherPlayer, stat){
@@ -24,12 +26,15 @@ class Player{
     }
 
     attackPlayer(otherPlayer){
+        this.pushToAnimStack(animationFrames.attack, true)
+        
         let dmg = this.attack
         return otherPlayer.dealDmg(dmg)
     }
-
+    
     heal(){
         if(Math.random() >= .5){
+            this.pushToAnimStack(animationFrames.heal, true)
             const healedHp = Math.trunc(Math.random() * 5) + 15
             this.hp += healedHp
             return healedHp
@@ -39,8 +44,10 @@ class Player{
 
     lowerStat(otherPlayer, stat){
         if(stat == "attack"){
+            otherPlayer.pushToAnimStack(animationFrames.lowerAttack, true)
             otherPlayer[stat]--;
         }else if(stat == "dodge"){
+            otherPlayer.pushToAnimStack(animationFrames.lowerDodge, true)
             otherPlayer[stat] -= 5;
         }
     }
@@ -48,8 +55,10 @@ class Player{
     dealDmg(dmg){
         const randomDodgeChance = Math.trunc(Math.random() * 100) + 1
         if(randomDodgeChance < this.dodge){
+            this.pushToAnimStack(animationFrames.dodge, true)
             return 0
         }else{
+            this.pushToAnimStack(animationFrames.takeDmg, true)
             this.hp -= dmg
             return dmg
         }
@@ -78,6 +87,22 @@ class Player{
             this.dodge = playerObj.dodge
         }
     }
+
+    pushToAnimStack(newAnimFrames, startFresh){
+        if(startFresh == true){
+            this.animFrameStack = []
+        }
+
+        newAnimFrames.forEach((frame) => {
+            this.animFrameStack.push(frame)
+        })
+    }
+
+    playAnimation(){
+        const playerImg = document.querySelector(`#${this.animTitle}Img`)
+        playerImg.src = `./imgs/${this.animTitle}/${this.animFrameStack[0]}.png`
+        this.animFrameStack.shift()
+    }
 }
 
 const playerDivs = document.querySelector("#playerDivs")
@@ -85,6 +110,17 @@ const notificationDiv = document.querySelector("#notificationDiv")
 
 // const apiUri = "http://localhost:3000"
 const apiUri = "http://192.168.0.162:3000"
+
+const animationFrames = {
+    idle: ["idle0", "idle1", "idle2", "idle3"],
+    attack: ["attack"],
+    dodge: ["dodge"],
+    heal: ["heal0", "heal1", "heal2", "heal3"],
+    takeDmg: ["getHit", "lost", "getHit"],
+    lowerAttack: ["lowerAttack0", "lowerAttack1", "lowerAttack2"],
+    lowerDodge: ["lowerDodge0", "lowerDodge1", "lowerDodge2"],
+    lost: ["lost"]
+}
 
 let players = [new Player(0), new Player(1)];
 // let currentTurn = Math.round(Math.random());
@@ -145,7 +181,6 @@ function updateVisuals(notificationText, winnerId){
     })
 
     if(someoneWon && notificationText != undefined){
-        console.log(someoneWon)
         notificationText = `${notificationText} \n ${players[someoneWon].title} won!`
         localStorage.clear()
         gameRunning = false
@@ -212,6 +247,18 @@ function displayNotification(text, permanent){
     }
 }
 
+function animationManager(){
+    setInterval(() => {
+        players.forEach((player) => {
+            if(player.animFrameStack.length <= 1){
+                player.pushToAnimStack([...animationFrames.idle])
+            }
+
+            player.playAnimation()
+        })
+    }, 500)
+}
+
 async function startGame(){
     if(localStorage.getItem("connGameInfo") == undefined){
         location.href = "index.html"
@@ -237,6 +284,11 @@ async function startGame(){
         playerControls.classList.add("playerControls")
         playerControls.id = `playerControls${i}`
 
+        const playerImg = document.createElement("img");
+        playerImg.classList.add("playerImg")
+        playerImg.id = `player${i}Img`
+        playerImg.src = `./imgs/player${i}/idle0.png`
+
         const textDiv = document.createElement("div")
         textDiv.classList.add("playerTexts")
 
@@ -253,78 +305,78 @@ async function startGame(){
         yourTurnDiv.classList.add("yourTurnDiv")
         yourTurnDiv.innerText = "YOUR TURN"
 
-        const buttonsDiv = document.createElement("div")
+        let buttonsDiv = document.createElement("div")
         buttonsDiv.classList.add("playerBtns")
 
-        const attackBtn = document.createElement("button")
-        attackBtn.innerText = "Attack"
-        attackBtn.id = "attackBtn"
-        attackBtn.addEventListener("click", () => {
-            if(currentTurn == player.id){
-                let dealtDmg = player.makeAction("attack", opponent)
-                let notificationMsg = ""
+        let attackBtn = null
+        let healBtn = null
+        let lowerAttack = null
+        let lowerDodge = null
+        if(playerPlayed == i){
 
-                if(dealtDmg == 0){
-                    notificationMsg = `${opponent.title} dodged ${player.title}'s attack!`
-                }else{
-                    notificationMsg = `${opponent.title} got hit for ${dealtDmg} hp!`
+            attackBtn = document.createElement("button")
+            attackBtn.innerText = "Attack"
+            attackBtn.id = "attackBtn"
+            attackBtn.addEventListener("click", () => {
+                if(currentTurn == player.id){
+                    let dealtDmg = player.makeAction("attack", opponent)
+                    let notificationMsg = ""
+
+                    if(dealtDmg == 0){
+                        notificationMsg = `${opponent.title} dodged ${player.title}'s attack!`
+                    }else{
+                        notificationMsg = `${opponent.title} got hit for ${dealtDmg} hp!`
+                    }
+
+                    handleActionClick(notificationMsg)
                 }
+            })
 
-                handleActionClick(notificationMsg)
-            }
-        })
+            healBtn = document.createElement("button")
+            healBtn.innerText = "Heal"
+            healBtn.id = "healBtn"
+            healBtn.addEventListener("click", () => {
+                if(currentTurn == player.id){
+                    let healedHp = player.makeAction("heal")
+                    let notificationMsg = ""
 
-        const healBtn = document.createElement("button")
-        healBtn.innerText = "Heal"
-        healBtn.id = "healBtn"
-        healBtn.addEventListener("click", () => {
-            if(currentTurn == player.id){
-                let healedHp = player.makeAction("heal")
-                let notificationMsg = ""
+                    if(healedHp == 0){
+                        notificationMsg = `${player.title}'s heal wasn't successful!`
+                    }else{
+                        notificationMsg = `${player.title} healed ${healedHp} hp!`
+                    }
 
-                if(healedHp == 0){
-                    notificationMsg = `${player.title}'s heal wasn't successful!`
-                }else{
-                    notificationMsg = `${player.title} healed ${healedHp} hp!`
+                    handleActionClick(notificationMsg)
                 }
+            })
 
-                handleActionClick(notificationMsg)
-            }
-        })
-
-        const lowerAttack = document.createElement("button")
-        lowerAttack.innerText = "Lower Enemy Attack"
-        lowerAttack.id = "lowerAttackBtn"
-        lowerAttack.addEventListener("click", () => {
-            if(currentTurn == player.id){
-                if(opponent.attack >= 1){
-                    player.makeAction("lower", opponent, "attack")
-                    handleActionClick(`You lowered ${opponent.title} attack!`)
-                }else{
-                    displayNotification(`You cant lower ${opponent.title} attack any further!`)
+            lowerAttack = document.createElement("button")
+            lowerAttack.innerText = "Lower Enemy Attack"
+            lowerAttack.id = "lowerAttackBtn"
+            lowerAttack.addEventListener("click", () => {
+                if(currentTurn == player.id){
+                    if(opponent.attack >= 1){
+                        player.makeAction("lower", opponent, "attack")
+                        handleActionClick(`You lowered ${opponent.title} attack!`)
+                    }else{
+                        displayNotification(`You cant lower ${opponent.title} attack any further!`)
+                    }
                 }
-            }
-        })
-        
-        const lowerDodge = document.createElement("button")
-        lowerDodge.innerText = "Lower Enemy Dodge"
-        lowerDodge.id = "lowerDodgeBtn"
-        lowerDodge.addEventListener("click", () => {
-            if(currentTurn == player.id){
-                if(opponent.dodge >= 1){
-                    player.makeAction("lower", opponent, "dodge")
-                    handleActionClick(`You lowered ${opponent.title} dodge!`)
-                }else{
-                    displayNotification(`You cant lower ${opponent.title} dodge any further!`)
+            })
+            
+            lowerDodge = document.createElement("button")
+            lowerDodge.innerText = "Lower Enemy Dodge"
+            lowerDodge.id = "lowerDodgeBtn"
+            lowerDodge.addEventListener("click", () => {
+                if(currentTurn == player.id){
+                    if(opponent.dodge >= 1){
+                        player.makeAction("lower", opponent, "dodge")
+                        handleActionClick(`You lowered ${opponent.title} dodge!`)
+                    }else{
+                        displayNotification(`You cant lower ${opponent.title} dodge any further!`)
+                    }
                 }
-            }
-        })
-        
-        if(playerPlayed != i){
-            attackBtn.setAttribute("disabled", "true")  
-            healBtn.setAttribute("disabled", "true")    
-            lowerAttack.setAttribute("disabled", "true")
-            lowerDodge.setAttribute("disabled", "true") 
+            })
         }
 
         statAndTitleDiv.appendChild(h1Title)
@@ -340,6 +392,7 @@ async function startGame(){
             buttonsDiv.appendChild(lowerDodge)
         }
 
+        playerControls.appendChild(playerImg)
         playerControls.appendChild(textDiv)
         playerControls.appendChild(buttonsDiv)
 
@@ -351,6 +404,7 @@ async function startGame(){
     })
 
     updateVisuals()
+    animationManager()
     if(playerPlayed == 1 && localStorage.getItem("gameState") == undefined){
         setGameStateAfterFetch()
     }
