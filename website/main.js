@@ -2,6 +2,7 @@ class Player{
     constructor(startId){
         this.id = startId
         this.title = `Player ${this.id + 1}`
+        this.animTitle = `player${this.id}`
 
         this.hp = 50;
         this.attack = 15;
@@ -306,7 +307,7 @@ async function startGame(){
         })
         
         const lowerDodge = document.createElement("button")
-        lowerDodge.innerText = "Lower Enemies Dodge"
+        lowerDodge.innerText = "Lower Enemy Dodge"
         lowerDodge.id = "lowerDodgeBtn"
         lowerDodge.addEventListener("click", () => {
             if(currentTurn == player.id){
@@ -332,10 +333,12 @@ async function startGame(){
         textDiv.appendChild(statAndTitleDiv)
         textDiv.appendChild(yourTurnDiv)
 
-        buttonsDiv.appendChild(attackBtn)
-        buttonsDiv.appendChild(healBtn)
-        buttonsDiv.appendChild(lowerAttack)
-        buttonsDiv.appendChild(lowerDodge)
+        if(playerPlayed == i){
+            buttonsDiv.appendChild(attackBtn)
+            buttonsDiv.appendChild(healBtn)
+            buttonsDiv.appendChild(lowerAttack)
+            buttonsDiv.appendChild(lowerDodge)
+        }
 
         playerControls.appendChild(textDiv)
         playerControls.appendChild(buttonsDiv)

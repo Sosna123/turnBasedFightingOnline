@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 /* body */
 body{
     margin: 0;
@@ -6,18 +8,22 @@ body{
     height: 100vh;
 }
 
+body > *{
+    font-family: "Press Start 2P", monospace;
+}
+
 /* player divs */
 #playerDivs{
     position: absolute;
     bottom: 0;
-    height: 50%;
+    height: 75%;
     width: 100%;
     display: flex;
 }
 
 .playerControls{
     width: 50%;
-    background-color: gray;
+    background-color: black;
 }
 
 .playerControls > .playerBtns{
@@ -36,27 +42,38 @@ body{
     border: 1px solid black;
     margin: 0;
     width: 50%;
-    height: 50%;
-    font-size: 24px;
+    min-height: 50%;
+    font-size: 20px;
+    font-family: "Press Start 2P", monospace;
 }
 
 .playerControls > .playerBtns > button#attackBtn{
-    background-color: red;
+    background-color: #b80000;
 }
 .playerControls > .playerBtns > button#healBtn{
-    background-color: green;
+    background-color: #1f9000;
 }
 .playerControls > .playerBtns > button#lowerAttackBtn{
-    background-color: yellow;
+    background-color: #f4bd14;
 }
 .playerControls > .playerBtns > button#lowerDodgeBtn{
-    background-color: blue;
+    background-color: #0035e0;
 }
 
 .playerControls > .playerTexts{
     width: 100%;
     display: flex;
     justify-content: space-between;
+    color: white;
+}
+
+#playerControls0 h1{
+    color: #f41414;
+    font-weight: normal;
+}
+#playerControls1 h1{
+    color: #0085b8;
+    font-weight: normal;
 }
 
 .playerControls > .statAndTitleDiv{
@@ -75,7 +92,7 @@ body{
 .playerControls > .playerTexts > .yourTurnDiv{
     height: 100%;
     aspect-ratio: 1;
-    background-color: #00657F;
+    background-color: #0000a4;
     border-radius: 100%;
     text-align: center;
     font-family: 32px;
