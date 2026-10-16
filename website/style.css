@@ -27,7 +27,9 @@ body > *{
 
 .playerImg{
     height: 33.33%;
+    aspect-ratio: 1 / 1;
     margin: auto;
+    image-rendering: pixelated;
 }
 
 #player0Img{
@@ -35,6 +37,7 @@ body > *{
 }
 #player1Img{
     margin: 0 15vw 0 25vw;
+    transform: scaleX(-1);
 }
 
 .playerControls > .playerBtns{

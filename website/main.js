@@ -107,7 +107,7 @@ class Player{
 
     playAnimation(){
         const playerImg = document.querySelector(`#${this.animTitle}Img`)
-        playerImg.src = `./imgs/${this.animTitle}/${this.animFrameStack[0]}.png`
+        playerImg.src = `./assets/imgs/${this.animTitle}/${this.animFrameStack[0]}.png`
         this.animFrameStack.shift()
     }
 }
@@ -294,7 +294,7 @@ async function startGame(){
         const playerImg = document.createElement("img");
         playerImg.classList.add("playerImg")
         playerImg.id = `player${i}Img`
-        playerImg.src = `./imgs/player${i}/idle0.png`
+        playerImg.src = `./assets/imgs/player${i}/idle0.png`
 
         const textDiv = document.createElement("div")
         textDiv.classList.add("playerTexts")
