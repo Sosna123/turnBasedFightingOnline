@@ -60,14 +60,25 @@ class Player{
         }else{
             this.pushToAnimStack("takeDmg", true)
             this.hp -= dmg
+
+            if(this.hp < 0){
+                this.hp = 0
+            }
+
             return dmg
         }
     }
 
     updateStatDisplay(){
-        let statDisplay = document.querySelector(`#playerControls${this.id} .statDisplay`)
+        let statDisplay = document.querySelector(`#playerControls${this.id} .statDisplay .textStats`)
+    
+        statDisplay.innerText = `Attack: ${this.attack}\n Dodge chance: ${this.dodge}%\n Heal chance: 50%`
 
-        statDisplay.innerText = `Health: ${this.hp} \n Attack: ${this.attack} \n Dodge chance: ${this.dodge}% \n Heal chance: 50%`
+        let hpBarProgress = document.querySelector(`#playerControls${this.id} .hpBarOutline .hpBarProgress`)
+        hpBarProgress.innerText = `${this.hp}/50`
+
+        let hpPercentProgress = Math.min(this.hp, 50) / 50
+        hpBarProgress.style.width = `${hpPercentProgress * 100}%`
     }
 
     returnStats(){
@@ -254,7 +265,6 @@ function displayNotification(text, gameEnded){
     clearTimeout(clearNotificationTimeout)
     
     if(gameEnded){
-        notificationDiv.style.textDecoration = "underline"
         notificationDiv.addEventListener("click", () => {
             location.href = "index.html"
         })
@@ -319,6 +329,15 @@ async function startGame(){
 
         const statDisplay = document.createElement("div")
         statDisplay.classList.add("statDisplay")
+
+        const hpBarOutline = document.createElement("div")
+        hpBarOutline.classList.add("hpBarOutline")
+        
+        const hpBarProgress = document.createElement("div")
+        hpBarProgress.classList.add("hpBarProgress")
+
+        const textStats = document.createElement("div")
+        textStats.classList.add("textStats")
 
         const h1Title = document.createElement("h1")
         h1Title.innerText = player.title
@@ -399,6 +418,11 @@ async function startGame(){
                 }
             })
         }
+
+        hpBarOutline.appendChild(hpBarProgress)
+
+        statDisplay.appendChild(hpBarOutline)
+        statDisplay.appendChild(textStats)
 
         statAndTitleDiv.appendChild(h1Title)
         statAndTitleDiv.appendChild(statDisplay)
