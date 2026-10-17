@@ -476,6 +476,15 @@ async function startGame(){
     if(currentTurn != playerPlayed && localStorage.getItem("gameState") != undefined){
         setGameStateAfterFetch()
     }
+
+    let bg = document.querySelector("#fightersBackground")
+    setInterval(() => {
+        let newImg = "./assets/imgs/fighterBackground0.png"
+        if(bg.style.backgroundImage.includes("fighterBackground0.png")){
+            newImg = "./assets/imgs/fighterBackground1.png"
+        }
+        bg.style.backgroundImage = `url(${newImg})`
+    }, animationFrameTime)
 }
 
 startGame()
