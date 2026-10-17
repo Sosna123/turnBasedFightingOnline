@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - turnBasedFightingOnline</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="container">
+        <div id="displayContainer" --data-info-page="true">
+            <h1>Assets:</h1>
+            <ul>
+                <li><a target="_blank" href="https://chasersgaming.itch.io/brawler-asset-character">Characters (slightly modified)</a></li>
+            </ul>
+            <h1>How to play:</h1>
+            <ul>
+                <li>Both players start with the same stats (50 hp, 15 attack, 25% dodge chance)</li>
+                <li>Each player has 4 actions:
+                    <ul>
+                        <li>Attack - deal your attack damage to the other player</li>
+                        <li>Heal - You have a 50% chance to heal between 15-20 hp</li>
+                        <li>Lower Attack / Dodge - You can lower the stats of the other player</li>
+                    </ul>
+                </li>
+            </ul>
+            <button id="backBtn">Back to main menu</button>
+        </div>
+    </div>
+
+    <img id="player0" class="playerImg" src="./assets/imgs/player0/idle0.png"></img>
+    <img id="player1" class="playerImg" src="./assets/imgs/player1/idle0.png"></img>
+
+    <script>
+        const backBtn = document.querySelector("#backBtn")
+        backBtn.addEventListener("click", () => {
+            location.href = "index.html"
+        })
+    </script>
+</body>
+</html>

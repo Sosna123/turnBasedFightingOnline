@@ -1,4 +1,5 @@
 const connectBtn = document.querySelector("#connectBtn")
+const infoBtn = document.querySelector("#infoBtn")
 const customIdCheckbox = document.querySelector("#customIdCheckbox")
 const customIdDiv = document.querySelector("#customIdDiv")
 const customId = document.querySelector("#customId")
@@ -9,6 +10,9 @@ customIdCheckbox.addEventListener("click", () => {
     customIdDiv.style.display = customIdCheckbox.checked ? "block" : "none"
 })
 
+infoBtn.addEventListener("click", () => {
+    location.href = "info.html"
+})
 
 connectBtn.addEventListener("click", async () => {
     let data = null
