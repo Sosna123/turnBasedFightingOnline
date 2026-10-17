@@ -138,8 +138,8 @@ const animationFrames = {
     takeDmg: ["getHit", "lost", "getHit"],
     lowerAttack: ["lowerAttack0", "lowerAttack1", "lowerAttack2"],
     lowerDodge: ["lowerDodge0", "lowerDodge1", "lowerDodge2"],
-    lost: ["getHit", "lost", "lost"],
-    win: ["win0", "win1", "win2"]
+    lost: ["getHit", "lost", "lostTear0", "lostTear1", "lostTear2", "lost"],
+    win: ["win0", "win1", "win2", "win2", "win2", "win2"]
 }
 
 let players = [new Player(0), new Player(1)];
@@ -220,7 +220,7 @@ function updateVisuals(notificationText, winnerId){
                 if(animationInterval != null){
                     clearInterval(animationInterval)
                 }
-            }, animationFrameTime * 3)
+            }, animationFrameTime * animationFrames.lost.length)
         })
 
         gameRunning = false
