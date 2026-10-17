@@ -13,6 +13,17 @@ body > *{
 }
 
 /* player divs */
+#fightersBackground{
+    position: absolute;
+    z-index: -1;
+    width: 100%;
+    height: calc((.4 * 80vh) + 20vh);
+    background-image: url("./assets/imgs/fighterBackground.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
 #playerDivs{
     position: absolute;
     bottom: 0;

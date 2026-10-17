@@ -129,6 +129,7 @@ const notificationDiv = document.querySelector("#notificationDiv")
 // const apiUri = "http://localhost:3000"
 const apiUri = "http://192.168.0.162:3000"
 
+const animationFrameTime = 500
 const animationFrames = {
     idle: ["idle0", "idle1", "idle2", "idle3"],
     attack: ["attack"],
@@ -137,7 +138,8 @@ const animationFrames = {
     takeDmg: ["getHit", "lost", "getHit"],
     lowerAttack: ["lowerAttack0", "lowerAttack1", "lowerAttack2"],
     lowerDodge: ["lowerDodge0", "lowerDodge1", "lowerDodge2"],
-    lost: ["lost"]
+    lost: ["getHit", "lost", "lost"],
+    win: ["win0", "win1", "win2"]
 }
 
 let players = [new Player(0), new Player(1)];
@@ -148,6 +150,7 @@ let gameRunning = true
 let clearNotificationTimeout = 0;
 let password = null
 let gameId = null;
+let animationInterval = null;
 
 
 async function handleActionClick(notificationText, dontChangeTurn){
@@ -203,6 +206,23 @@ function updateVisuals(notificationText, winnerId){
     if(someoneWon && notificationText != undefined){
         notificationText = `${notificationText}\n ${players[someoneWon].title} won!\n Click here to return to main menu`
         localStorage.clear()
+
+        
+
+        players.forEach((player, index) => {
+            if(index == someoneWon){
+                player.pushToAnimStack("win", true)
+            }else{
+                player.pushToAnimStack("lost", true)
+            }
+
+            setTimeout(() => {
+                if(animationInterval != null){
+                    clearInterval(animationInterval)
+                }
+            }, animationFrameTime * 3)
+        })
+
         gameRunning = false
     }
 
@@ -278,7 +298,7 @@ function displayNotification(text, gameEnded){
 }
 
 function animationManager(){
-    setInterval(() => {
+    animationInterval = setInterval(() => {
         players.forEach((player) => {
             if(player.animFrameStack.length <= 1){
                 player.pushToAnimStack("idle")
@@ -286,7 +306,7 @@ function animationManager(){
 
             player.playAnimation()
         })
-    }, 500)
+    }, animationFrameTime)
 }
 
 async function startGame(){
