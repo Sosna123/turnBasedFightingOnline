@@ -198,3 +198,20 @@ body > *{
     display: none;
     z-index: 2;
 }
+
+/* mute */
+#turnOffSound{
+    width: 4rem;
+    aspect-ratio: 1 / 1;
+    background-color: black;
+    border: 2px solid white;
+    position: absolute;
+    top: .25rem;
+    left: .25rem
+}
+
+#turnOffSound > img{
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}

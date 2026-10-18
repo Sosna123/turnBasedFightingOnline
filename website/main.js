@@ -4,7 +4,8 @@ class Player{
         this.title = `Player ${this.id + 1}`
         this.animTitle = `player${this.id}`
 
-        this.hp = 50;
+        this.maxHp = 100
+        this.hp = this.maxHp;
         this.attack = 15;
         this.dodge = 25;
 
@@ -29,14 +30,21 @@ class Player{
         this.pushToAnimStack("attack", true)
         
         let dmg = this.attack
-        return otherPlayer.dealDmg(dmg)
+        return otherPlayer.getHit(dmg)
     }
     
     heal(){
         if(Math.random() >= .5){
             this.pushToAnimStack("heal", true)
-            const healedHp = Math.trunc(Math.random() * 5) + 15
-            this.hp += healedHp
+            let healedHp = Math.trunc(Math.random() * 5) + 15
+
+            if(this.hp + healedHp > this.maxHp){
+                healedHp = this.maxHp - this.hp
+                this.hp = this.maxHp
+            }else{
+                this.hp += healedHp
+            }
+
             return healedHp
         }
         return 0
@@ -52,12 +60,13 @@ class Player{
         }
     }
 
-    dealDmg(dmg){
+    getHit(dmg){
         const randomDodgeChance = Math.trunc(Math.random() * 100) + 1
         if(randomDodgeChance < this.dodge){
             this.pushToAnimStack("dodge", true)
             return 0
         }else{
+            this.playRandomSound("getHit")
             this.pushToAnimStack("takeDmg", true)
             this.hp -= dmg
 
@@ -67,6 +76,7 @@ class Player{
 
             return dmg
         }
+
     }
 
     updateStatDisplay(){
@@ -75,9 +85,9 @@ class Player{
         statDisplay.innerText = `Attack: ${this.attack}\n Dodge chance: ${this.dodge}%\n Heal chance: 50%`
 
         let hpBarProgress = document.querySelector(`#playerControls${this.id} .hpBarOutline .hpBarProgress`)
-        hpBarProgress.innerText = `${this.hp}/50`
+        hpBarProgress.innerText = `${this.hp}/${this.maxHp}`
 
-        let hpPercentProgress = Math.min(this.hp, 50) / 50
+        let hpPercentProgress = Math.min(this.hp, this.maxHp) / this.maxHp
         hpBarProgress.style.width = `${hpPercentProgress * 100}%`
     }
 
@@ -121,10 +131,20 @@ class Player{
         playerImg.src = `./assets/imgs/${this.animTitle}/${this.animFrameStack[0]}.png`
         this.animFrameStack.shift()
     }
+
+    playRandomSound(typeOfSfx){
+        if(soundTurnedOn){
+            let randomSoundId = Math.trunc(Math.random() * (allSfxTypes[typeOfSfx].length - 1))
+            let randomSound = allSfxTypes[typeOfSfx][randomSoundId]
+            let playAudio = new Audio(`./assets/sfx/${randomSound}.wav`)
+            playAudio.play()
+        }
+    }
 }
 
 const playerDivs = document.querySelector("#playerDivs")
 const notificationDiv = document.querySelector("#notificationDiv")
+const turnOffSound = document.querySelector("#turnOffSound")
 
 // const apiUri = "http://localhost:3000"
 const apiUri = "http://192.168.0.162:3000"
@@ -142,16 +162,24 @@ const animationFrames = {
     win: ["win0", "win1", "win2", "win2", "win2", "win2"]
 }
 
+const allSfxTypes = {
+    getHit: ["grunt1"]
+}
+
 let players = [new Player(0), new Player(1)];
 // let currentTurn = Math.round(Math.random());
 let currentTurn = 0;
-let playerPlayed = null
-let gameRunning = true
+let gameRunning = true;
 let clearNotificationTimeout = 0;
-let password = null
-let gameId = null;
 let animationInterval = null;
-let playedLocally = false;
+let soundTurnedOn = true
+
+let gameInfo = {
+    playerPlayed: null,
+    password: null,
+    gameId: null,
+    playedLocally: null
+}
 
 
 async function handleActionClick(notificationText, dontChangeTurn){
@@ -166,11 +194,11 @@ async function handleActionClick(notificationText, dontChangeTurn){
         ],
         notificationText,
         currentTurn,
-        password,
-        gameId
+        password: gameInfo.password,
+        gameId: gameInfo.gameId
     }
 
-    if(!playedLocally){
+    if(!gameInfo.playedLocally){
         const data = await fetch(`${apiUri}/moveMade`, {
             method: "post",
             headers: {
@@ -324,18 +352,27 @@ async function startGame(){
     }
 
     let connGameInfo = JSON.parse(localStorage.getItem("connGameInfo"))
-    playerPlayed = connGameInfo.playerId
-    password = connGameInfo.password
-    gameId = connGameInfo.gameId
-    playedLocally = connGameInfo.locally
+    gameInfo.playerPlayed = connGameInfo.playerId
+    gameInfo.password = connGameInfo.password
+    gameInfo.gameId = connGameInfo.gameId
+    gameInfo.playedLocally = connGameInfo.locally
 
     if(localStorage.getItem("gameState") != undefined){
         let state = JSON.parse(localStorage.getItem("gameState"))
 
-        players[0].updateData(state.playerData[0])
-        players[1].updateData(state.playerData[1])
+        if(state.playerData){
+            players[0].updateData(state.playerData[0])
+            players[1].updateData(state.playerData[1])
+        }
         currentTurn = state.currentTurn
     }
+
+    let imgsToPreload = ["fighterBackground0", "fighterBackground1", "player0/idle0", "player0/idle1", "player0/idle2", "player0/idle3", "player1/idle0", "player1/idle1", "player1/idle2", "player1/idle3"]
+
+    imgsToPreload.forEach(img => {
+        const imgLoader = new Image()
+        imgLoader.src = `./assets/imgs/${img}.png`
+    })
 
     for(let i = 0; i < players.length; i++){
         const player = players[i];
@@ -382,7 +419,7 @@ async function startGame(){
         let healBtn = null
         let lowerAttack = null
         let lowerDodge = null
-        if(playerPlayed == i || playedLocally){
+        if(gameInfo.playerPlayed == i || gameInfo.playedLocally){
 
             attackBtn = document.createElement("button")
             attackBtn.innerText = "Attack"
@@ -407,6 +444,11 @@ async function startGame(){
             healBtn.id = "healBtn"
             healBtn.addEventListener("click", () => {
                 if(currentTurn == player.id){
+                    if(player.hp >= player.maxHp){
+                        displayNotification(`You are already at max hp!`)
+                        return
+                    }
+
                     let healedHp = player.makeAction("heal")
                     let notificationMsg = ""
 
@@ -425,7 +467,7 @@ async function startGame(){
             lowerAttack.id = "lowerAttackBtn"
             lowerAttack.addEventListener("click", () => {
                 if(currentTurn == player.id){
-                    if(opponent.attack >= 1){
+                    if(opponent.attack > 5){
                         player.makeAction("lower", opponent, "attack")
                         handleActionClick(`You lowered ${opponent.title} attack!`)
                     }else{
@@ -460,7 +502,7 @@ async function startGame(){
         textDiv.appendChild(statAndTitleDiv)
         textDiv.appendChild(yourTurnDiv)
 
-        if(playerPlayed == i || playedLocally){
+        if(gameInfo.playerPlayed == i || gameInfo.playedLocally){
             buttonsDiv.appendChild(attackBtn)
             buttonsDiv.appendChild(healBtn)
             buttonsDiv.appendChild(lowerAttack)
@@ -481,11 +523,11 @@ async function startGame(){
     updateVisuals()
     animationManager()
 
-    if(!playedLocally){
-        if(playerPlayed == 1 && localStorage.getItem("gameState") == undefined){
+    if(!gameInfo.playedLocally){
+        if(gameInfo.playerPlayed == 1 && localStorage.getItem("gameState") == undefined){
             setGameStateAfterFetch()
         }
-        if(currentTurn != playerPlayed && localStorage.getItem("gameState") != undefined){
+        if(currentTurn != gameInfo.playerPlayed && localStorage.getItem("gameState") != undefined){
             setGameStateAfterFetch()
         }
     }
@@ -498,6 +540,24 @@ async function startGame(){
         }
         bg.style.backgroundImage = `url(${newImg})`
     }, animationFrameTime)
+}
+
+turnOffSound.addEventListener("click", () => {
+    soundTurnedOn = !soundTurnedOn
+    localStorage.setItem("soundTurnedOn", soundTurnedOn)
+
+    let soundImg = document.querySelector("#turnOffSound > img")
+    if(soundTurnedOn){
+        soundImg.setAttribute("src", "./assets/imgs/muteButton.png")
+    }else{
+        soundImg.setAttribute("src", "./assets/imgs/muteButtonOff.png")
+    }
+})
+
+if(localStorage.getItem("soundTurnedOn") == "false" || localStorage.getItem("soundTurnedOn") == "true"){
+    soundTurnedOn = localStorage.getItem("soundTurnedOn") == "true" ? true : false
+    soundTurnedOn = !soundTurnedOn
+    turnOffSound.click()
 }
 
 startGame()

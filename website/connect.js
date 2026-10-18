@@ -8,24 +8,7 @@ const errors = document.querySelector("#errors")
 const apiUri = "http://192.168.0.162:3000"
 
 const defaultState = {
-    playerData: [
-        {
-            id: 0,
-            title: "Player 1",
-            hp: 50,
-            attack: 15,
-            dodge: 25,
-            lastAnimation: "idle"
-        },
-        {
-            id: 1,
-            title: "Player 2",
-            hp: 50,
-            attack: 15,
-            dodge: 25,
-            lastAnimation: "idle"
-        },
-    ],
+    playerData: null,
     notificationText: null,
     currentTurn: 0,
     password: null,
