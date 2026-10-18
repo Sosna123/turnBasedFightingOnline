@@ -151,6 +151,7 @@ let clearNotificationTimeout = 0;
 let password = null
 let gameId = null;
 let animationInterval = null;
+let playedLocally = false;
 
 
 async function handleActionClick(notificationText, dontChangeTurn){
@@ -169,16 +170,18 @@ async function handleActionClick(notificationText, dontChangeTurn){
         gameId
     }
 
-    const data = await fetch(`${apiUri}/moveMade`, {
-        method: "post",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(gameState)
-    })
-
-    if(data.status == 200){
-        setGameStateAfterFetch()
+    if(!playedLocally){
+        const data = await fetch(`${apiUri}/moveMade`, {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(gameState)
+        })
+    
+        if(data.status == 200){
+            setGameStateAfterFetch()
+        }
     }
 
     updateVisuals(notificationText)
@@ -207,8 +210,6 @@ function updateVisuals(notificationText, winnerId){
         notificationText = `${notificationText}\n ${players[someoneWon].title} won!\n Click here to return to main menu`
         localStorage.clear()
 
-        
-
         players.forEach((player, index) => {
             if(index == someoneWon){
                 player.pushToAnimStack("win", true)
@@ -224,6 +225,14 @@ function updateVisuals(notificationText, winnerId){
         })
 
         gameRunning = false
+        currentTurn = -1;
+
+        if( document.querySelector(`#playerControls0 .yourTurnDiv`) != undefined){
+            document.querySelector(`#playerControls0 .yourTurnDiv`).style.display = "none"
+        }
+        if( document.querySelector(`#playerControls1 .yourTurnDiv`) != undefined){
+            document.querySelector(`#playerControls1 .yourTurnDiv`).style.display = "none"
+        }
     }
 
     if(notificationText != undefined){
@@ -318,6 +327,7 @@ async function startGame(){
     playerPlayed = connGameInfo.playerId
     password = connGameInfo.password
     gameId = connGameInfo.gameId
+    playedLocally = connGameInfo.locally
 
     if(localStorage.getItem("gameState") != undefined){
         let state = JSON.parse(localStorage.getItem("gameState"))
@@ -372,7 +382,7 @@ async function startGame(){
         let healBtn = null
         let lowerAttack = null
         let lowerDodge = null
-        if(playerPlayed == i){
+        if(playerPlayed == i || playedLocally){
 
             attackBtn = document.createElement("button")
             attackBtn.innerText = "Attack"
@@ -450,7 +460,7 @@ async function startGame(){
         textDiv.appendChild(statAndTitleDiv)
         textDiv.appendChild(yourTurnDiv)
 
-        if(playerPlayed == i){
+        if(playerPlayed == i || playedLocally){
             buttonsDiv.appendChild(attackBtn)
             buttonsDiv.appendChild(healBtn)
             buttonsDiv.appendChild(lowerAttack)
@@ -470,11 +480,14 @@ async function startGame(){
 
     updateVisuals()
     animationManager()
-    if(playerPlayed == 1 && localStorage.getItem("gameState") == undefined){
-        setGameStateAfterFetch()
-    }
-    if(currentTurn != playerPlayed && localStorage.getItem("gameState") != undefined){
-        setGameStateAfterFetch()
+
+    if(!playedLocally){
+        if(playerPlayed == 1 && localStorage.getItem("gameState") == undefined){
+            setGameStateAfterFetch()
+        }
+        if(currentTurn != playerPlayed && localStorage.getItem("gameState") != undefined){
+            setGameStateAfterFetch()
+        }
     }
 
     let bg = document.querySelector("#fightersBackground")

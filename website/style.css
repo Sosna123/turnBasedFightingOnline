@@ -76,10 +76,10 @@ button{
     margin: 15px;
 }
 
-#connectBtn{
+#connectBtn, #localBtn{
     background-color: #1f9000;
 }
-#connectBtn:active{
+#connectBtn:active, #localBtn:active{
     background-color: #145a00;
 }
 

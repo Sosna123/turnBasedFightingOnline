@@ -1,10 +1,36 @@
 const connectBtn = document.querySelector("#connectBtn")
 const infoBtn = document.querySelector("#infoBtn")
+const localBtn = document.querySelector("#localBtn")
 const customIdCheckbox = document.querySelector("#customIdCheckbox")
 const customIdDiv = document.querySelector("#customIdDiv")
 const customId = document.querySelector("#customId")
 const errors = document.querySelector("#errors")
 const apiUri = "http://192.168.0.162:3000"
+
+const defaultState = {
+    playerData: [
+        {
+            id: 0,
+            title: "Player 1",
+            hp: 50,
+            attack: 15,
+            dodge: 25,
+            lastAnimation: "idle"
+        },
+        {
+            id: 1,
+            title: "Player 2",
+            hp: 50,
+            attack: 15,
+            dodge: 25,
+            lastAnimation: "idle"
+        },
+    ],
+    notificationText: null,
+    currentTurn: 0,
+    password: null,
+    gameId: -1
+}
 
 customIdCheckbox.addEventListener("click", () => {
     customIdDiv.style.display = customIdCheckbox.checked ? "block" : "none"
@@ -51,7 +77,7 @@ connectBtn.addEventListener("click", async () => {
 
     if(data.status == 200){
         localStorage.clear()
-        localStorage.setItem("connGameInfo", JSON.stringify({playerId: dataJson.playerId, password: dataJson.password, gameId: dataJson.gameId}))
+        localStorage.setItem("connGameInfo", JSON.stringify({playerId: dataJson.playerId, password: dataJson.password, locally: false, gameId: dataJson.gameId}))
         
         if(dataJson.state != null){
             localStorage.setItem("gameState", JSON.stringify(dataJson.state))
@@ -61,4 +87,14 @@ connectBtn.addEventListener("click", async () => {
     }else{
         errors.innerText = `Error while connecting: ${dataJson.text}`
     }
+})
+
+localBtn.addEventListener("click", async () => {
+    let data = null
+
+    localStorage.clear()
+    localStorage.setItem("connGameInfo", JSON.stringify({playerId: -1, password: null, locally: true, gameId: -1}))
+    localStorage.setItem("gameState", JSON.stringify(defaultState))
+
+    location.href = "game.html"
 })
