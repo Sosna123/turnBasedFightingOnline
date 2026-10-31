@@ -87,7 +87,7 @@ app.post("/connect", (req, res) => {
         res.json({"text": "didn't sent id of game"})
         return
     }
-
+    
     let customId = req.body.id
 
     if(customId.length > 16){
@@ -99,7 +99,7 @@ app.post("/connect", (req, res) => {
     let state = null
     let gameId = null
 
-    if(!Object.keys(emptyCustomIds).includes(customId) || emptyCustomIds[customId] == undefined){
+    if(!Object.keys(emptyCustomIds).includes(customId) || emptyCustomIds[customId] == "already full"){
         gameId = gamesRunning.length
         currPlayer = 0
         password = crypto.randomBytes(16).toString('hex')
@@ -115,7 +115,7 @@ app.post("/connect", (req, res) => {
         let newId = gamesRunning.push(gameObj)
         newId--
         emptyCustomIds[customId] = newId
-    }else if(Object.keys(emptyCustomIds).includes(customId) && !gamesRunning[gamesRunning.length - 1].player1Taken){
+    }else if(Object.keys(emptyCustomIds).includes(customId) && !gamesRunning[emptyCustomIds[customId]].player1Taken){
         currPlayer = 1
         
         gameId = emptyCustomIds[customId]
@@ -123,8 +123,8 @@ app.post("/connect", (req, res) => {
         password = gamesRunning[gameId].password
         state = gamesRunning[gameId].state
 
-        emptyCustomIds[customId] = undefined
-    }else if(Object.keys(obj).includes(customId) && gamesRunning[gamesRunning.length - 1].player0Taken && gamesRunning[gamesRunning.length - 1].player1Taken){
+        emptyCustomIds[customId] = "already full"
+    }else if(Object.keys(emptyCustomIds).includes(customId) && gamesRunning[emptyCustomIds[customId]].player0Taken && gamesRunning[emptyCustomIds[customId]].player1Taken){
         res.statusCode = 400;
         res.json({"text": "game is already full"})
         return
@@ -152,9 +152,6 @@ app.get("/waitUntilMoveMade", (req, res) => {
 
     let sendGameState = (state) => {
         if(state.password == gamesRunning[state.gameId].password){
-            console.log(state)
-            console.log("sending to " + state.gameId + " with password " + gamesRunning[state.gameId].password)
-            
             gamesRunning[state.gameId].state = state
 
             let arePlayersAlive = true

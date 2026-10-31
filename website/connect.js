@@ -19,6 +19,10 @@ customIdCheckbox.addEventListener("click", () => {
     customIdDiv.style.display = customIdCheckbox.checked ? "block" : "none"
 })
 
+if(customIdCheckbox.checked){
+   customIdDiv.style.display = "block"
+}
+
 infoBtn.addEventListener("click", () => {
     location.href = "info.html"
 })
