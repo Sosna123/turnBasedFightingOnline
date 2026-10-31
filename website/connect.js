@@ -5,7 +5,16 @@ const customIdCheckbox = document.querySelector("#customIdCheckbox")
 const customIdDiv = document.querySelector("#customIdDiv")
 const customId = document.querySelector("#customId")
 const errors = document.querySelector("#errors")
-const apiUri = "http://192.168.0.162:3000"
+
+let apiUri = "https://frog01-31260.wykr.es"
+if(localStorage.getItem("dev") == "true"){
+    apiUri = "http://192.168.0.162:3000"
+}
+
+function setDev(){
+    localStorage.setItem("dev", "true")
+    apiUri = "http://192.168.0.162:3000"
+}
 
 const defaultState = {
     playerData: null,
