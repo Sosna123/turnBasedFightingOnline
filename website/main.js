@@ -172,7 +172,11 @@ let currentTurn = 0;
 let gameRunning = true;
 let clearNotificationTimeout = 0;
 let animationInterval = null;
-let soundTurnedOn = true
+let soundTurnedOn = false
+
+if(localStorage.getItem("soundTurnedOn") == undefined){
+    localStorage.setItem("soundTurnedOn", soundTurnedOn)
+}
 
 let gameInfo = {
     playerPlayed: null,
@@ -366,13 +370,6 @@ async function startGame(){
         }
         currentTurn = state.currentTurn
     }
-
-    let imgsToPreload = ["fighterBackground0", "fighterBackground1", "player0/idle0", "player0/idle1", "player0/idle2", "player0/idle3", "player1/idle0", "player1/idle1", "player1/idle2", "player1/idle3"]
-
-    imgsToPreload.forEach(img => {
-        const imgLoader = new Image()
-        imgLoader.src = `./assets/imgs/${img}.png`
-    })
 
     for(let i = 0; i < players.length; i++){
         const player = players[i];

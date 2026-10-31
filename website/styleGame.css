@@ -207,7 +207,8 @@ body > *{
     border: 2px solid white;
     position: absolute;
     top: .25rem;
-    left: .25rem
+    left: .25rem;
+    display: none;
 }
 
 #turnOffSound > img{
