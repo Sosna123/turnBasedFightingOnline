@@ -146,8 +146,15 @@ const playerDivs = document.querySelector("#playerDivs")
 const notificationDiv = document.querySelector("#notificationDiv")
 const turnOffSound = document.querySelector("#turnOffSound")
 
-// const apiUri = "http://localhost:3000"
-const apiUri = "http://192.168.0.162:3000"
+let apiUri = "https://frog01-31260.wykr.es"
+if(localStorage.getItem("dev") == "true"){
+    apiUri = "http://192.168.0.162:3000"
+}
+
+function setDev(){
+    localStorage.setItem("dev", "true")
+    apiUri = "http://192.168.0.162:3000"
+}
 
 const animationFrameTime = 500
 const animationFrames = {
