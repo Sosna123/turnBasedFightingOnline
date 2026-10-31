@@ -31,14 +31,14 @@ connectBtn.addEventListener("click", async () => {
         customIdParsed = customIdParsed.substring(0, 16)
     }
 
-    if(customIdParsed.value){
+    if(customIdParsed){
         try{
             data = await fetch(`${apiUri}/connect`, {
                 method: "post",
                 headers:{
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({id: customIdParsed.value})
+                body: JSON.stringify({id: customIdParsed})
             })
         }catch(e){
             errors.innerText = `Error while connecting: can't connect to server`

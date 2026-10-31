@@ -312,7 +312,7 @@ async function setGameStateAfterFetch(){
             players[1].returnStats(),
         ],
         notificationText: dataJson.state.notificationText,
-        password,
+        password: gameInfo.password,
         currentTurn
     }
 

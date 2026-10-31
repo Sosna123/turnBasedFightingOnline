@@ -152,6 +152,9 @@ app.get("/waitUntilMoveMade", (req, res) => {
 
     let sendGameState = (state) => {
         if(state.password == gamesRunning[state.gameId].password){
+            console.log(state)
+            console.log("sending to " + state.gameId + " with password " + gamesRunning[state.gameId].password)
+            
             gamesRunning[state.gameId].state = state
 
             let arePlayersAlive = true
@@ -161,21 +164,22 @@ app.get("/waitUntilMoveMade", (req, res) => {
                     state.winner = `${Number(state.playerData[0].hp < state.playerData[1].hp)}`
                 }
             })
-
+            
             res.json({text: "A move was made", state})
             responseSent = true
+            events.removeListener("moveMade", sendGameState)
         }
     }
 
-    events.once("moveMade", sendGameState)
+    events.addListener("moveMade", sendGameState)
 
     setTimeout(() => {
         if(!responseSent){
             events.removeListener("moveMade", sendGameState)
             res.statusCode = 504
-            res.json({text: `No move was made in ${maxTimeWaiting}ms`})
+            res.json({text: `No move was made in ${maxTimeWaiting - 100}ms`})
         }
-    }, maxTimeWaiting)  
+    }, maxTimeWaiting - 100)  
 })
 
 app.listen(port, () => {
