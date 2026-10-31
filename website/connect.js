@@ -24,6 +24,11 @@ const defaultState = {
     gameId: -1
 }
 
+Storage.prototype.clearGameInfo = function(){
+    localStorage.removeItem("connGameInfo")
+    localStorage.removeItem("gameState")
+}
+
 customIdCheckbox.addEventListener("click", () => {
     customIdDiv.style.display = customIdCheckbox.checked ? "block" : "none"
 })
@@ -72,7 +77,7 @@ connectBtn.addEventListener("click", async () => {
     const dataJson = await data.json()
 
     if(data.status == 200){
-        localStorage.clear()
+        localStorage.clearGameInfo()
         localStorage.setItem("connGameInfo", JSON.stringify({playerId: dataJson.playerId, password: dataJson.password, locally: false, gameId: dataJson.gameId}))
         
         if(dataJson.state != null){
@@ -86,7 +91,7 @@ connectBtn.addEventListener("click", async () => {
 })
 
 localBtn.addEventListener("click", async () => {
-    localStorage.clear()
+    localStorage.clearGameInfo()
     localStorage.setItem("connGameInfo", JSON.stringify({playerId: -1, password: null, locally: true, gameId: -1}))
     localStorage.setItem("gameState", JSON.stringify(defaultState))
 

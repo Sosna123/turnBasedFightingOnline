@@ -178,6 +178,10 @@ let players = [new Player(0), new Player(1)];
 let currentTurn = 0;
 let gameRunning = true;
 let clearNotificationTimeout = 0;
+let waitedAfterMove = true
+let latestWaitedAfterMoveTimeout = null
+let latestMoveTimeout = null
+
 let animationInterval = null;
 let soundTurnedOn = false
 
@@ -192,8 +196,22 @@ let gameInfo = {
     playedLocally: null
 }
 
+Storage.prototype.clearGameInfo = function(){
+    localStorage.removeItem("connGameInfo")
+    localStorage.removeItem("gameState")
+}
 
 async function handleActionClick(notificationText, dontChangeTurn){
+    if(!waitedAfterMove && latestMoveTimeout == null){
+        latestMoveTimeout = setTimeout(() => {
+            handleActionClick(notificationText, dontChangeTurn)
+            latestMoveTimeout = null
+        }, 50)
+        return
+    }
+
+    waitedAfterMove = false
+
     if(dontChangeTurn != true){
         currentTurn = (currentTurn + 1) % 2
     }
@@ -225,6 +243,11 @@ async function handleActionClick(notificationText, dontChangeTurn){
 
     updateVisuals(notificationText)
     localStorage.setItem("gameState", JSON.stringify(gameState))
+
+    clearTimeout(latestWaitedAfterMoveTimeout)
+    latestWaitedAfterMoveTimeout = setTimeout(() => {
+        waitedAfterMove = true
+    }, 200)
 }
 
 function updateVisuals(notificationText, winnerId){
@@ -247,7 +270,7 @@ function updateVisuals(notificationText, winnerId){
 
     if(someoneWon && notificationText != undefined){
         notificationText = `${notificationText}\n ${players[someoneWon].title} won!\n Click here to return to main menu`
-        localStorage.clear()
+        localStorage.clearGameInfo()
 
         players.forEach((player, index) => {
             if(index == someoneWon){
@@ -424,11 +447,18 @@ async function startGame(){
         let lowerAttack = null
         let lowerDodge = null
         if(gameInfo.playerPlayed == i || gameInfo.playedLocally){
-
             attackBtn = document.createElement("button")
             attackBtn.innerText = "Attack"
             attackBtn.id = "attackBtn"
             attackBtn.addEventListener("click", () => {
+                if(!waitedAfterMove && latestMoveTimeout == null){
+                    latestMoveTimeout = setTimeout(() => {
+                        attackBtn.click()
+                        latestMoveTimeout = null
+                    }, 50)
+                    return
+                }
+
                 if(currentTurn == player.id){
                     let dealtDmg = player.makeAction("attack", opponent)
                     let notificationMsg = ""
@@ -447,6 +477,14 @@ async function startGame(){
             healBtn.innerText = "Heal"
             healBtn.id = "healBtn"
             healBtn.addEventListener("click", () => {
+                if(!waitedAfterMove && latestMoveTimeout == null){
+                    latestMoveTimeout = setTimeout(() => {
+                        healBtn.click()
+                        latestMoveTimeout = null
+                    }, 50)
+                    return
+                }
+
                 if(currentTurn == player.id){
                     if(player.hp >= player.maxHp){
                         displayNotification(`You are already at max hp!`)
@@ -470,6 +508,14 @@ async function startGame(){
             lowerAttack.innerText = "Lower Enemy Attack"
             lowerAttack.id = "lowerAttackBtn"
             lowerAttack.addEventListener("click", () => {
+                if(!waitedAfterMove && latestMoveTimeout == null){
+                    latestMoveTimeout = setTimeout(() => {
+                        lowerAttack.click()
+                        latestMoveTimeout = null
+                    }, 50)
+                    return
+                }
+
                 if(currentTurn == player.id){
                     if(opponent.attack > 5){
                         player.makeAction("lower", opponent, "attack")
@@ -484,6 +530,14 @@ async function startGame(){
             lowerDodge.innerText = "Lower Enemy Dodge"
             lowerDodge.id = "lowerDodgeBtn"
             lowerDodge.addEventListener("click", () => {
+                if(!waitedAfterMove && latestMoveTimeout == null){
+                    latestMoveTimeout = setTimeout(() => {
+                        lowerDodge.click()
+                        latestMoveTimeout = null
+                    }, 50)
+                    return
+                }
+
                 if(currentTurn == player.id){
                     if(opponent.dodge >= 1){
                         player.makeAction("lower", opponent, "dodge")

@@ -74,6 +74,7 @@ button{
     font-size: 1.5rem;
     font-family: "Press Start 2P", monospace;
     margin: 15px;
+    cursor: pointer;
 }
 
 #connectBtn, #localBtn{
