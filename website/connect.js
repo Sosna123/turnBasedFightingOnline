@@ -77,8 +77,6 @@ connectBtn.addEventListener("click", async () => {
 })
 
 localBtn.addEventListener("click", async () => {
-    let data = null
-
     localStorage.clear()
     localStorage.setItem("connGameInfo", JSON.stringify({playerId: -1, password: null, locally: true, gameId: -1}))
     localStorage.setItem("gameState", JSON.stringify(defaultState))

@@ -558,3 +558,15 @@ if(localStorage.getItem("soundTurnedOn") == "false" || localStorage.getItem("sou
 }
 
 startGame()
+
+if(screen.orientation.type.includes("portrait")){
+    document.querySelector("#orientationWarning").style.display = "flex"
+}
+
+screen.orientation.onchange = () => {
+    if(screen.orientation.type.includes("portrait")){
+        document.querySelector("#orientationWarning").style.display = "flex"
+    }else{
+        document.querySelector("#orientationWarning").style.display = "none"
+    }
+}
